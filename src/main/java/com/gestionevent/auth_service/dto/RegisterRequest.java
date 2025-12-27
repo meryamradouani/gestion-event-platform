@@ -1,23 +1,18 @@
 package com.gestionevent.auth_service.dto;
 
-/**
- * Data Transfer Object pour gérer les requêtes d'inscription.
- * Centralise les champs communs et spécifiques aux rôles.
- */
 public class RegisterRequest {
 
     // --- Champs Communs ---
-    private String firstName;
-    private String lastName;
+    private String fullName; // Remplace firstName et lastName
     private String email;
     private String password;
 
-    // --- Champs Spécifiques : Étudiant ---
+    // --- Champs Spécifiques : Étudiant (selon gestionevent.sql) ---
     private String cne;
     private String filiere;
     private String niveau;
 
-    // --- Champs Spécifiques : Organisateur ---
+    // --- Champs Spécifiques : Organisateur (selon gestionevent.sql) ---
     private String nomEtablissement;
     private String typeOrganisateur;
 
@@ -28,32 +23,69 @@ public class RegisterRequest {
     // --- Getters et Setters ---
 
     // Communs
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getFullName() {
+        return fullName;
+    }
 
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     // Étudiant
-    public String getCne() { return cne; }
-    public void setCne(String cne) { this.cne = cne; }
+    public String getCne() {
+        return cne;
+    }
 
-    public String getFiliere() { return filiere; }
-    public void setFiliere(String filiere) { this.filiere = filiere; }
+    public void setCne(String cne) {
+        this.cne = cne;
+    }
 
-    public String getNiveau() { return niveau; }
-    public void setNiveau(String niveau) { this.niveau = niveau; }
+    public String getFiliere() {
+        return filiere;
+    }
+
+    public void setFiliere(String filiere) {
+        this.filiere = filiere;
+    }
+
+    public String getNiveau() {
+        return niveau;
+    }
+
+    public void setNiveau(String niveau) {
+        this.niveau = niveau;
+    }
 
     // Organisateur
-    public String getNomEtablissement() { return nomEtablissement; }
-    public void setNomEtablissement(String nomEtablissement) { this.nomEtablissement = nomEtablissement; }
+    public String getNomEtablissement() {
+        return nomEtablissement;
+    }
 
-    public String getTypeOrganisateur() { return typeOrganisateur; }
-    public void setTypeOrganisateur(String typeOrganisateur) { this.typeOrganisateur = typeOrganisateur; }
+    public void setNomEtablissement(String nomEtablissement) {
+        this.nomEtablissement = nomEtablissement;
+    }
+
+    public String getTypeOrganisateur() {
+        return typeOrganisateur;
+    }
+
+    public void setTypeOrganisateur(String typeOrganisateur) {
+        this.typeOrganisateur = typeOrganisateur;
+    }
 }
