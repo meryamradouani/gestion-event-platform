@@ -22,7 +22,14 @@ jobs:
           cache: 'maven'
 
       - name: 🧪 Maven Build & Test
-        run: mvn clean package -DskipTests  # ✅ mvn simple
+        run: mvn clean package -DskipTests
+
+      - name: 📦 Upload JARs
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-jars
+          path: "**/target/*.jar"
+          retention-days: 1
 
   ## 🔍 STAGE 2: SONARQUBE (Action officielle ✅ NO PLUGIN)
   sonar:
@@ -61,6 +68,11 @@ jobs:
         service: [api-gateway, auth-service, event-service, notification-service, profil-service, registration-service]
     steps:
       - uses: actions/checkout@v4
+
+      - name: 📦 Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: service-jars
 
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
