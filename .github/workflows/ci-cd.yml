@@ -22,11 +22,9 @@ jobs:
           cache: 'maven'
 
       - name: 🧪 Maven Build & Test
-        run: |
-          chmod +x mvnw
-          ./mvnw clean package -DskipTests
+        run: mvn clean package -DskipTests  # ✅ mvn simple
 
-  ## 🔍 STAGE 2: SONARQUBE QUALITY GATE
+  ## 🔍 STAGE 2: SONARQUBE (Action officielle ✅ NO PLUGIN)
   sonar:
     needs: test
     runs-on: ubuntu-latest
@@ -40,21 +38,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'maven'
 
-      - name: 🔍 SonarCloud Analysis
-        run: |
-          mvn sonar:sonar \
-          -Dsonar.projectKey=meryamm_gestion-event-platform \
-          -Dsonar.organization=meryamm \
-          -Dsonar.host.url=https://sonarcloud.io
+      - name: 🔍 SonarCloud Analysis **FIXED**
+        uses: SonarSource/sonarqube-scan-action@v3  # ✅ Action officielle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-
-  ## 🐳 STAGE 4: DOCKER BUILD & PUSH
+  ## 🐳 STAGE 3: DOCKER BUILD & PUSH
   docker:
-    needs: sonar
+    needs: [test, sonar]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     strategy:
@@ -63,33 +57,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: 🏗️ Package Service
-        run: mvn clean package -pl ${{ matrix.service }} -am -DskipTests
-
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
           username: meryamm
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 🏗️ Build Image
+      - name: 🏗️ Build & Push Service  **FIXED**
         run: |
           docker build -t meryamm/gestion_event-${{ matrix.service }}:${{ github.sha }} -f ${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
-
-
-      - name: 🏗️ Push Image
-        run: |
           docker push meryamm/gestion_event-${{ matrix.service }}:${{ github.sha }}
           docker tag meryamm/gestion_event-${{ matrix.service }}:${{ github.sha }} meryamm/gestion_event-${{ matrix.service }}:latest
           docker push meryamm/gestion_event-${{ matrix.service }}:latest
+        # ✅ Pas de mvn -pl = SIMPLE !
 
-  ## ☁️ STAGE 5: KUBERNETES DEPLOY
+  ## ☁️ STAGE 4: KUBERNETES DEPLOY
   deploy:
     needs: docker
     runs-on: ubuntu-latest
@@ -103,13 +85,12 @@ jobs:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG }}
 
-      - name: 🚀 Deploy All manifests
+      - name: 🚀 Deploy All
         run: |
           kubectl create namespace gestion-event --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f k8s/ -n gestion-event
-
-      - name: 🔄 Update Images
-        run: |
+          
+          # Update images
           services=("api-gateway" "auth-service" "event-service" "notification-service" "profil-service" "registration-service")
           for service in "${services[@]}"; do
             kubectl set image deployment/"$service" "$service"=meryamm/gestion_event-"$service":${{ github.sha }} -n gestion-event
