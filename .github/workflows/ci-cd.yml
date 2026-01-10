@@ -16,7 +16,6 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: db_auth_service
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -42,29 +41,30 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: 🧪 Maven Build & Test
-        run: mvn clean package
+      - name: 🛠️ Create Databases
+        run: |
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS db_auth_service;"
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS event_db;"
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS notification_db;"
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS profile_db;"
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS registration_db;"
 
-      - name: 📦 Upload JARs
+      - name: 🧪 Maven Build & Test
+        run: mvn clean verify
+
+      - name: 📦 Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: service-jars
-          path: "**/target/*.jar"
+          name: service-artifacts
+          path: |
+            **/target/*.jar
+            **/target/site/jacoco/jacoco.xml
           retention-days: 1
 
-  ## 🔍 STAGE 2: SONARQUBE (Action officielle ✅ NO PLUGIN)
+  ## 🔍 STAGE 2: SONARQUBE
   sonar:
     needs: test
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: db_auth_service
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - uses: actions/checkout@v4
         with:
@@ -77,12 +77,18 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: 🔍 SonarCloud Analysis (Maven Plugin)
+      - name: 📦 Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: service-artifacts
+
+      - name: 🔍 SonarCloud Analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -DskipTests \
             -Dsonar.projectKey=meryamradouani_gestion-event-platform \
             -Dsonar.organization=meryamradouani \
             -Dsonar.host.url=https://sonarcloud.io
