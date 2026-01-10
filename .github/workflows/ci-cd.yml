@@ -47,8 +47,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=meryamm_gestion-event-platform
-            -Dsonar.organization=meryamm
+            -Dsonar.projectKey=meryamradouani_gestion-event-platform
+            -Dsonar.organization=meryamradouani
             -Dsonar.host.url=https://sonarcloud.io
 
   ## 🐳 STAGE 3: DOCKER BUILD & PUSH
