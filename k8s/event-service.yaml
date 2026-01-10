@@ -38,3 +38,15 @@ spec:
           value: votre_super_secret_key_pour_les_tokens_jwt_changez_cela_en_production
         ports:
         - containerPort: 8083
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8083
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8083
+          initialDelaySeconds: 30
+          periodSeconds: 10
