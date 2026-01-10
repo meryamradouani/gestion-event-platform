@@ -87,35 +87,3 @@ jobs:
           docker tag meryamm/gestion_event-${{ matrix.service }}:${{ github.sha }} meryamm/gestion_event-${{ matrix.service }}:latest
           docker push meryamm/gestion_event-${{ matrix.service }}:latest
         # ✅ Pas de mvn -pl = SIMPLE !
-
-  ## ☁️ STAGE 4: KUBERNETES DEPLOY
-  deploy:
-    needs: docker
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 🛡️ Kubernetes Setup
-        uses: azure/k8s-set-context@v4
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG }}
-
-      - name: 🚀 Deploy All
-        run: |
-          kubectl create namespace gestion-event --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -f k8s/ -n gestion-event
-          
-          # Update images
-          services=("api-gateway" "auth-service" "event-service" "notification-service" "profil-service" "registration-service")
-          for service in "${services[@]}"; do
-            kubectl set image deployment/"$service" "$service"=meryamm/gestion_event-"$service":${{ github.sha }} -n gestion-event
-          done
-
-      - name: ✅ Wait Rollout
-        run: |
-          services=("api-gateway" "auth-service" "event-service" "notification-service" "profil-service" "registration-service")
-          for service in "${services[@]}"; do
-            kubectl rollout status deployment/"$service" -n gestion-event --timeout=300s
-          done
