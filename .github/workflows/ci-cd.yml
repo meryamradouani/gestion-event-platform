@@ -58,32 +58,135 @@ jobs:
             -Dsonar.organization=meryamradouani \
             -Dsonar.host.url=https://sonarcloud.io
 
-  ## 🐳 STAGE 3: DOCKER BUILD & PUSH
-  docker:
+  ## 🐳 STAGE 3: DOCKER BUILD & PUSH (SÉPARÉ)
+  docker-api-gateway:
     needs: [test, sonar]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    strategy:
-      matrix:
-        service: [api-gateway, auth-service, event-service, notification-service, profil-service, registration-service]
     steps:
       - uses: actions/checkout@v4
-
       - name: 📦 Download JARs
         uses: actions/download-artifact@v4
         with:
           name: service-jars
-
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
           username: meryamm
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: 🏗️ Build & Push Service  **FIXED**
+      - name: 🏗️ Build & Push API Gateway
         run: |
-          docker build -t meryamm/gestion_event-${{ matrix.service }}:${{ github.sha }} -f ${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
-          docker push meryamm/gestion_event-${{ matrix.service }}:${{ github.sha }}
-          docker tag meryamm/gestion_event-${{ matrix.service }}:${{ github.sha }} meryamm/gestion_event-${{ matrix.service }}:latest
-          docker push meryamm/gestion_event-${{ matrix.service }}:latest
-        # ✅ Pas de mvn -pl = SIMPLE !
+          docker build -t meryamm/gestion_event-api-gateway:${{ github.sha }} -f api-gateway/Dockerfile ./api-gateway/
+          docker push meryamm/gestion_event-api-gateway:${{ github.sha }}
+          docker tag meryamm/gestion_event-api-gateway:${{ github.sha }} meryamm/gestion_event-api-gateway:latest
+          docker push meryamm/gestion_event-api-gateway:latest
+
+  docker-auth:
+    needs: [test, sonar]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 📦 Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: service-jars
+      - name: 🤖 Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: meryamm
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: 🏗️ Build & Push Auth Service
+        run: |
+          docker build -t meryamm/gestion_event-auth-service:${{ github.sha }} -f auth-service/Dockerfile ./auth-service/
+          docker push meryamm/gestion_event-auth-service:${{ github.sha }}
+          docker tag meryamm/gestion_event-auth-service:${{ github.sha }} meryamm/gestion_event-auth-service:latest
+          docker push meryamm/gestion_event-auth-service:latest
+
+  docker-event:
+    needs: [test, sonar]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 📦 Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: service-jars
+      - name: 🤖 Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: meryamm
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: 🏗️ Build & Push Event Service
+        run: |
+          docker build -t meryamm/gestion_event-event-service:${{ github.sha }} -f event-service/Dockerfile ./event-service/
+          docker push meryamm/gestion_event-event-service:${{ github.sha }}
+          docker tag meryamm/gestion_event-event-service:${{ github.sha }} meryamm/gestion_event-event-service:latest
+          docker push meryamm/gestion_event-event-service:latest
+
+  docker-notification:
+    needs: [test, sonar]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 📦 Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: service-jars
+      - name: 🤖 Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: meryamm
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: 🏗️ Build & Push Notification Service
+        run: |
+          docker build -t meryamm/gestion_event-notification-service:${{ github.sha }} -f notification-service/Dockerfile ./notification-service/
+          docker push meryamm/gestion_event-notification-service:${{ github.sha }}
+          docker tag meryamm/gestion_event-notification-service:${{ github.sha }} meryamm/gestion_event-notification-service:latest
+          docker push meryamm/gestion_event-notification-service:latest
+
+  docker-profile:
+    needs: [test, sonar]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 📦 Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: service-jars
+      - name: 🤖 Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: meryamm
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: 🏗️ Build & Push Profile Service
+        run: |
+          docker build -t meryamm/gestion_event-profil-service:${{ github.sha }} -f profil-service/Dockerfile ./profil-service/
+          docker push meryamm/gestion_event-profil-service:${{ github.sha }}
+          docker tag meryamm/gestion_event-profil-service:${{ github.sha }} meryamm/gestion_event-profil-service:latest
+          docker push meryamm/gestion_event-profil-service:latest
+
+  docker-registration:
+    needs: [test, sonar]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: 📦 Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: service-jars
+      - name: 🤖 Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: meryamm
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: 🏗️ Build & Push Registration Service
+        run: |
+          docker build -t meryamm/gestion_event-registration-service:${{ github.sha }} -f registration-service/Dockerfile ./registration-service/
+          docker push meryamm/gestion_event-registration-service:${{ github.sha }}
+          docker tag meryamm/gestion_event-registration-service:${{ github.sha }} meryamm/gestion_event-registration-service:latest
+          docker push meryamm/gestion_event-registration-service:latest
