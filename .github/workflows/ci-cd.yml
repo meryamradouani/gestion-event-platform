@@ -11,6 +11,29 @@ jobs:
   ## 🧪 STAGE 1: TESTS & BUILD MAVEN
   test:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: db_auth_service
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      kafka:
+        image: bitnami/kafka:latest
+        env:
+          KAFKA_CFG_NODE_ID: 1
+          KAFKA_CFG_PROCESS_ROLES: controller,broker
+          KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+          KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_CFG_BROKER_ID: 1
+          ALLOW_PLAINTEXT_LISTENER: yes
+        ports:
+          - 9092:9092
     steps:
       - uses: actions/checkout@v4
 
@@ -22,7 +45,7 @@ jobs:
           cache: 'maven'
 
       - name: 🧪 Maven Build & Test
-        run: mvn clean package -DskipTests
+        run: mvn clean package
 
       - name: 📦 Upload JARs
         uses: actions/upload-artifact@v4
@@ -35,6 +58,15 @@ jobs:
   sonar:
     needs: test
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: db_auth_service
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,7 +85,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -DskipTests \
             -Dsonar.projectKey=meryamradouani_gestion-event-platform \
             -Dsonar.organization=meryamradouani \
             -Dsonar.host.url=https://sonarcloud.io
