@@ -52,8 +52,12 @@ jobs:
       - name: 🧪 Maven Build & Test
         env:
           SPRING_DATASOURCE_PASSWORD: root
-          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-        run: mvn clean verify
+          SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          MYSQL_PASSWORD: root
+        run: |
+          echo "Waiting for Kafka to be ready..."
+          sleep 15
+          mvn clean verify
 
       - name: 📦 Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -103,10 +107,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: 📦 Download JARs
+      - name: 📦 Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: service-jars
+          name: service-artifacts
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
@@ -125,10 +129,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: 📦 Download JARs
+      - name: 📦 Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: service-jars
+          name: service-artifacts
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
@@ -147,10 +151,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: 📦 Download JARs
+      - name: 📦 Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: service-jars
+          name: service-artifacts
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
@@ -169,10 +173,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: 📦 Download JARs
+      - name: 📦 Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: service-jars
+          name: service-artifacts
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
@@ -191,10 +195,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: 📦 Download JARs
+      - name: 📦 Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: service-jars
+          name: service-artifacts
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
@@ -213,10 +217,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: 📦 Download JARs
+      - name: 📦 Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: service-jars
+          name: service-artifacts
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
