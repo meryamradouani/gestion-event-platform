@@ -50,6 +50,9 @@ jobs:
           mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS registration_db;"
 
       - name: 🧪 Maven Build & Test
+        env:
+          SPRING_DATASOURCE_PASSWORD: root
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
         run: mvn clean verify
 
       - name: 📦 Upload Artifacts
