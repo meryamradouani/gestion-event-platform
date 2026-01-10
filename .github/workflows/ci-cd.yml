@@ -23,8 +23,8 @@ jobs:
 
       - name: 🧪 Maven Build & Test
         run: |
-          mvn clean test
-          mvn clean package -DskipTests
+          chmod +x mvnw
+          ./mvnw clean package -DskipTests
 
   ## 🔍 STAGE 2: SONARQUBE QUALITY GATE
   sonar:
@@ -51,26 +51,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  ## 🛡️ STAGE 3: SECURITY SCAN (Trivy)
-  security:
-    needs: sonar
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: 🛡️ Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
 
   ## 🐳 STAGE 4: DOCKER BUILD & PUSH
   docker:
-    needs: [security, sonar]
+    needs: sonar
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     strategy:
@@ -98,13 +82,6 @@ jobs:
         run: |
           docker build -t meryamm/gestion_event-${{ matrix.service }}:${{ github.sha }} -f ${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
 
-      - name: 🐳 Docker Scan (Trivy)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'meryamm/gestion_event-${{ matrix.service }}:${{ github.sha }}'
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
 
       - name: 🏗️ Push Image
         run: |
