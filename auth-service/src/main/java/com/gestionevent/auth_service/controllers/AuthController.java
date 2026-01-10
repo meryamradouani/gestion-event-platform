@@ -20,26 +20,30 @@ public class AuthController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+    private static final String ROLE_STUDENT = "STUDENT";
+    private static final String ROLE_ORGANIZER = "ORGANIZER";
+
     // --- Inscription Étudiant ---
     @PostMapping("/register/student")
-    public ResponseEntity<?> registerStudent(@RequestBody RegisterRequest request) {
-        return saveUser(request, "STUDENT"); // On laisse saveUser gérer la réponse
+    public ResponseEntity<String> registerStudent(@RequestBody RegisterRequest request) {
+        return saveUser(request, ROLE_STUDENT); // On laisse saveUser gérer la réponse
     }
 
     // --- Inscription Organisateur ---
     @PostMapping("/register/organizer")
-    public ResponseEntity<?> registerOrganizer(@RequestBody RegisterRequest request) {
-        return saveUser(request, "ORGANIZER");
+    public ResponseEntity<String> registerOrganizer(@RequestBody RegisterRequest request) {
+        return saveUser(request, ROLE_ORGANIZER);
     }
 
     // --- Connexion ---
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
         return userRepository.findByEmail(request.getEmail())
                 .map(user -> {
                     // Vérification du mot de passe haché
                     if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-                        return ResponseEntity.ok("Connexion réussie ! Bienvenue " + user.getFirstName() + " (" + user.getRole() + ")");
+                        return ResponseEntity.ok(
+                                "Connexion réussie ! Bienvenue " + user.getFirstName() + " (" + user.getRole() + ")");
                     } else {
                         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mot de passe incorrect");
                     }
@@ -48,7 +52,7 @@ public class AuthController {
     }
 
     // Méthode utilitaire pour traiter l'inscription
-    private ResponseEntity<?> saveUser(RegisterRequest request, String role) {
+    private ResponseEntity<String> saveUser(RegisterRequest request, String role) {
         // Vérification unique de l'email
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Erreur : Cet email est déjà utilisé.");
@@ -72,7 +76,7 @@ public class AuthController {
         }
 
         userRepository.save(user);
-        String message = ("STUDENT".equals(role) ? "Étudiant" : "Organisateur") + " inscrit avec succès !";
+        String message = (ROLE_STUDENT.equals(role) ? "Étudiant" : "Organisateur") + " inscrit avec succès !";
         return ResponseEntity.ok(message);
     }
 }

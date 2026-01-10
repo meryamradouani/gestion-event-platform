@@ -34,6 +34,9 @@ public class EventService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
+    @Autowired
+    private EventService self;
+
     @Value("${app.default-event-image:https://via.placeholder.com/600x400?text=Event+Image}")
     private String defaultEventImage;
 
@@ -56,7 +59,7 @@ public class EventService {
 
     @Transactional
     public EventResponse createEvent(CreateEventRequest request, Long creatorId) {
-        return createEventWithImage(request, null, creatorId);
+        return self.createEventWithImage(request, null, creatorId);
     }
 
     @Transactional
@@ -123,7 +126,7 @@ public class EventService {
 
     @Transactional
     public EventResponse updateEventWithImage(Long id, CreateEventRequest request, MultipartFile imageFile,
-                                              Long userId) {
+            Long userId) {
         log.info("Mise à jour complète de l'événement avec ID: {}", id);
 
         Event event = getEventEntityById(id);
@@ -325,12 +328,11 @@ public class EventService {
     }
 
     private boolean isAllowedContentType(String contentType) {
-        return contentType != null && (
-                contentType.equals("image/jpeg") ||
-                        contentType.equals("image/png") ||
-                        contentType.equals("image/gif") ||
-                        contentType.equals("image/webp") ||
-                        contentType.equals("image/jpg"));
+        return contentType != null && (contentType.equals("image/jpeg") ||
+                contentType.equals("image/png") ||
+                contentType.equals("image/gif") ||
+                contentType.equals("image/webp") ||
+                contentType.equals("image/jpg"));
     }
 
     private void updateEventStatusIfFull(Event event) {

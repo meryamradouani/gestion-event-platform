@@ -37,43 +37,99 @@ public class User {
     private String typeOrganisateur;
 
     // --- Constructeurs ---
+    // Constructeur par défaut requis par JPA
     public User() {
     }
 
     // --- Getters et Setters ---
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getFirstName() { return firstName; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public String getLastName() { return lastName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public String getPassword() {
+        return password;
+    }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     // Étudiant
-    public String getCne() { return cne; }
-    public void setCne(String cne) { this.cne = cne; }
+    public String getCne() {
+        return cne;
+    }
 
-    public String getFiliere() { return filiere; }
-    public void setFiliere(String filiere) { this.filiere = filiere; }
+    public void setCne(String cne) {
+        this.cne = cne;
+    }
 
-    public String getNiveau() { return niveau; }
-    public void setNiveau(String niveau) { this.niveau = niveau; }
+    public String getFiliere() {
+        return filiere;
+    }
+
+    public void setFiliere(String filiere) {
+        this.filiere = filiere;
+    }
+
+    public String getNiveau() {
+        return niveau;
+    }
+
+    public void setNiveau(String niveau) {
+        this.niveau = niveau;
+    }
 
     // Organisateur
-    public String getNomEtablissement() { return nomEtablissement; }
-    public void setNomEtablissement(String nomEtablissement) { this.nomEtablissement = nomEtablissement; }
+    public String getNomEtablissement() {
+        return nomEtablissement;
+    }
 
-    public String getTypeOrganisateur() { return typeOrganisateur; }
-    public void setTypeOrganisateur(String typeOrganisateur) { this.typeOrganisateur = typeOrganisateur; }
+    public void setNomEtablissement(String nomEtablissement) {
+        this.nomEtablissement = nomEtablissement;
+    }
+
+    public String getTypeOrganisateur() {
+        return typeOrganisateur;
+    }
+
+    public void setTypeOrganisateur(String typeOrganisateur) {
+        this.typeOrganisateur = typeOrganisateur;
+    }
 }

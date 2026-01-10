@@ -16,35 +16,37 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
-    
+
     @Autowired
     private NotificationQueryService queryService;
-    
+
     @GetMapping
     public ResponseEntity<ApiResponse<Page<NotificationResponse>>> getNotifications(
             @RequestParam Integer userId,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        
+
         Page<NotificationResponse> notifications = queryService.getUserNotifications(userId, pageable);
         ApiResponse<Page<NotificationResponse>> response = ApiResponse
                 .success("Notifications récupérées", notifications);
         return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/unread")
-    public ResponseEntity<ApiResponse<?>> getUnreadNotifications(@RequestParam Integer userId) {
+    public ResponseEntity<ApiResponse<java.util.List<NotificationResponse>>> getUnreadNotifications(
+            @RequestParam Integer userId) {
         var notifications = queryService.getUnreadNotifications(userId);
-        ApiResponse<?> response = ApiResponse.success("Notifications non lues récupérées", notifications);
+        ApiResponse<java.util.List<NotificationResponse>> response = ApiResponse
+                .success("Notifications non lues récupérées", notifications);
         return ResponseEntity.ok(response);
     }
-    
+
     @GetMapping("/unread/count")
     public ResponseEntity<ApiResponse<UnreadCountResponse>> getUnreadCount(@RequestParam Integer userId) {
         UnreadCountResponse count = queryService.getUnreadCount(userId);
         ApiResponse<UnreadCountResponse> response = ApiResponse.success("Compteur récupéré", count);
         return ResponseEntity.ok(response);
     }
-    
+
     @PutMapping("/read")
     public ResponseEntity<ApiResponse<Void>> markAsRead(@RequestBody MarkAsReadRequest request) {
         if (request.isMarkAll() && request.getUserId() != null) {
@@ -60,7 +62,7 @@ public class NotificationController {
             return ResponseEntity.badRequest().body(response);
         }
     }
-    
+
     @PutMapping("/read-all")
     public ResponseEntity<ApiResponse<Void>> markAllAsRead(@RequestParam Integer userId) {
         queryService.markAllAsRead(userId);
