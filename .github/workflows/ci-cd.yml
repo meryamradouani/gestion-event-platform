@@ -45,12 +45,20 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> adfab68ba6a148cef792e240b9f76290d1c430e1
       - name: 📦 Download compiled artifacts
         uses: actions/download-artifact@v4
         with:
           name: service-jars
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> adfab68ba6a148cef792e240b9f76290d1c430e1
       - name: 🔍 SonarCloud Analysis **ACTIVÉ**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
