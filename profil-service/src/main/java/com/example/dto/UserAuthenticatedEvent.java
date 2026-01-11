@@ -9,7 +9,7 @@ public class UserAuthenticatedEvent {
     private Long userId;
     private String email;
     private String fullName; // NOUVEAU
-    private String role;  // "student" ou "organizer"
+    private String role; // "student" ou "organizer"
     private LocalDateTime loginTime;
 
     // Constructeur par défaut

@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 public class EventCreatedEvent {
 
     private Long eventId;
-    private Long organizerId;  // L'utilisateur qui a créé l'événement
+    private Long organizerId; // L'utilisateur qui a créé l'événement
     private String eventTitle;
-    private String eventType;  // "conférence", "atelier", "fête"
+    private String eventType; // "conférence", "atelier", "fête"
     private LocalDateTime eventDate;
     private String location;
     private LocalDateTime creationTime;
@@ -21,8 +21,8 @@ public class EventCreatedEvent {
 
     // Constructeur avec paramètres
     public EventCreatedEvent(Long eventId, Long organizerId, String eventTitle,
-                             String eventType, LocalDateTime eventDate,
-                             String location, LocalDateTime creationTime) {
+            String eventType, LocalDateTime eventDate,
+            String location, LocalDateTime creationTime) {
         this.eventId = eventId;
         this.organizerId = organizerId;
         this.eventTitle = eventTitle;
