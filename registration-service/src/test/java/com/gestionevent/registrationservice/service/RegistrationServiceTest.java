@@ -47,7 +47,7 @@ class RegistrationServiceTest {
         assertNotNull(result);
         assertEquals(userId, result.getUserId());
         assertEquals(eventId, result.getEventId());
-        assertEquals("pending", result.getAttendanceStatus());
+
         verify(repository, times(1)).save(any(EventRegistration.class));
     }
 

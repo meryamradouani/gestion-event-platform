@@ -22,16 +22,9 @@ public class EventRegistration {
     @Column(name = "registered_at")
     private LocalDateTime registeredAt;
 
-    @Column(name = "attendance_status")
-    private String attendanceStatus;
-
-    @Column(name = "qr_code")
-    private String qrCode;
-
     // Constructeurs
     public EventRegistration() {
         this.registeredAt = LocalDateTime.now();
-        this.attendanceStatus = "pending";
     }
 
     public EventRegistration(Long userId, Long eventId) {
