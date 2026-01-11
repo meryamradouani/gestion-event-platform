@@ -31,7 +31,7 @@ jobs:
           path: "**/target/*.jar"
           retention-days: 1
 
-  ## 🔍 STAGE 2: SONARQUBE (✅ Quality Gate SKIP)
+  ## 🔍 STAGE 2: SONARQUBE (✅ Verification Only - No Block)
   sonar:
     needs: test
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: 🔍 SonarCloud Analysis (Maven Plugin)  # ✅ PARFAIT
+      - name: 🔍 SonarCloud Analysis
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -57,13 +57,12 @@ jobs:
             -Dsonar.projectKey=meryamradouani_gestion-event-platform \
             -Dsonar.organization=meryamradouani \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.qualitygate.wait=false  # ✅ SKIP GATE OK
+            -Dsonar.qualitygate.wait=false
 
   ## 🐳 STAGE 3: DOCKER BUILD & PUSH
   docker:
     needs: [test, sonar]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     strategy:
       matrix:
         service: [api-gateway, auth-service, event-service, notification-service, profil-service, registration-service]
