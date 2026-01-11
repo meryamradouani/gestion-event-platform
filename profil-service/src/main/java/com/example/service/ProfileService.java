@@ -13,23 +13,17 @@ public class ProfileService {
     private final ProfileRepository profileRepository;
     private final com.example.repository.ProfileImageRepository profileImageRepository;
 
-    private static final String HISTORY_INSCRITS = "inscrits";
-    private static final String HISTORY_CREES = "créés";
-
-    public ProfileService(ProfileRepository profileRepository,
-            com.example.repository.ProfileImageRepository profileImageRepository) {
+    public ProfileService(ProfileRepository profileRepository, com.example.repository.ProfileImageRepository profileImageRepository) {
         this.profileRepository = profileRepository;
         this.profileImageRepository = profileImageRepository;
     }
 
     // Upload profile image
-    public void uploadProfileImage(Long userId, org.springframework.web.multipart.MultipartFile file)
-            throws java.io.IOException {
+    public void uploadProfileImage(Long userId, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
         Optional<Profile> profileOpt = profileRepository.findByUserId(userId);
         if (profileOpt.isPresent()) {
             Profile profile = profileOpt.get();
-            Optional<com.example.entity.ProfileImage> existingImage = profileImageRepository
-                    .findByProfileId(profile.getId());
+            Optional<com.example.entity.ProfileImage> existingImage = profileImageRepository.findByProfileId(profile.getId());
 
             com.example.entity.ProfileImage image;
             if (existingImage.isPresent()) {
@@ -41,10 +35,8 @@ public class ProfileService {
             }
             profileImageRepository.save(image);
 
-            // Met à jour l'URL (optionnel si on veut garder une trace dans text, mais on va
-            // le générer dynamiquement plutôt)
-            // profile.setProfilePicUrl("http://localhost:8085/profiles/" + profile.getId()
-            // + "/image");
+            // Met à jour l'URL (optionnel si on veut garder une trace dans text, mais on va le générer dynamiquement plutôt)
+            // profile.setProfilePicUrl("http://localhost:8085/profiles/" + profile.getId() + "/image");
             // profileRepository.save(profile);
         }
     }
@@ -103,8 +95,7 @@ public class ProfileService {
             Profile profile = existingProfile.get();
             profile.setLastLogin(LocalDateTime.now());
 
-            // Si le nom change, on peut le mettre à jour ici (Optionnel, mais logique si on
-            // veut que le profil reflète le dernier login)
+            // Si le nom change, on peut le mettre à jour ici (Optionnel, mais logique si on veut que le profil reflète le dernier login)
             if (fullName != null && !fullName.isEmpty()) {
                 profile.setFullName(fullName);
             }
@@ -112,10 +103,8 @@ public class ProfileService {
             profileRepository.save(profile);
             System.out.println("✅ [Service] Updated last_login for existing user: " + userId);
         } else {
-            // Profil n'existe pas : on le crée avec le fullName, ou email, ou User ID par
-            // défaut
-            String nameToUse = (fullName != null && !fullName.isEmpty()) ? fullName
-                    : (email != null ? email : "User " + userId);
+            // Profil n'existe pas : on le crée avec le fullName, ou email, ou User ID par défaut
+            String nameToUse = (fullName != null && !fullName.isEmpty()) ? fullName : (email != null ? email : "User " + userId);
             Profile newProfile = new Profile(userId, nameToUse);
             newProfile.setLastLogin(LocalDateTime.now());
             profileRepository.save(newProfile);
@@ -137,66 +126,55 @@ public class ProfileService {
         profileRepository.findByUserId(userId).ifPresent(profile -> {
             try {
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                com.fasterxml.jackson.databind.node.ObjectNode root = parseHistory(profile.getEventsHistory(), mapper);
+                com.fasterxml.jackson.databind.node.ObjectNode root;
+                String history = profile.getEventsHistory();
 
-                updateHistoryArray(root, eventType, eventId);
+                if (history == null || history.trim().isEmpty()) {
+                    root = mapper.createObjectNode();
+                    root.putArray("inscrits");
+                    root.putArray("créés");
+                } else {
+                    try {
+                        root = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(history);
+                    } catch (Exception e) {
+                        // Si l'historique est corrompu, on repart de zéro
+                        root = mapper.createObjectNode();
+                        root.putArray("inscrits");
+                        root.putArray("créés");
+                    }
+                }
+
+                // Initialiser les tableaux s'ils manquent
+                if (!root.has("inscrits")) root.putArray("inscrits");
+                if (!root.has("créés")) root.putArray("créés");
+
+                com.fasterxml.jackson.databind.node.ArrayNode targetArray;
+                if ("inscrit".equals(eventType)) {
+                    targetArray = (com.fasterxml.jackson.databind.node.ArrayNode) root.get("inscrits");
+                } else {
+                    targetArray = (com.fasterxml.jackson.databind.node.ArrayNode) root.get("créés");
+                }
+
+                // Ajouter l'ID s'il n'est pas déjà présent (éviter doublons)
+                boolean exists = false;
+                for (com.fasterxml.jackson.databind.JsonNode node : targetArray) {
+                    if (node.asLong() == eventId) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    targetArray.add(eventId);
+                }
 
                 profile.setEventsHistory(mapper.writeValueAsString(root));
                 profileRepository.save(profile);
                 System.out.println("✅ Event " + eventId + " added to history for user: " + userId);
+
             } catch (Exception e) {
                 System.err.println("❌ Error updating history: " + e.getMessage());
+                e.printStackTrace();
             }
         });
-    }
-
-    private com.fasterxml.jackson.databind.node.ObjectNode parseHistory(String history,
-            com.fasterxml.jackson.databind.ObjectMapper mapper) {
-        if (history == null || history.trim().isEmpty()) {
-            return createEmptyHistory(mapper);
-        }
-        try {
-            com.fasterxml.jackson.databind.node.ObjectNode root = (com.fasterxml.jackson.databind.node.ObjectNode) mapper
-                    .readTree(history);
-            ensureHistoryArrays(root);
-            return root;
-        } catch (Exception e) {
-            return createEmptyHistory(mapper);
-        }
-    }
-
-    private com.fasterxml.jackson.databind.node.ObjectNode createEmptyHistory(
-            com.fasterxml.jackson.databind.ObjectMapper mapper) {
-        com.fasterxml.jackson.databind.node.ObjectNode root = mapper.createObjectNode();
-        root.putArray(HISTORY_INSCRITS);
-        root.putArray(HISTORY_CREES);
-        return root;
-    }
-
-    private void ensureHistoryArrays(com.fasterxml.jackson.databind.node.ObjectNode root) {
-        if (!root.has(HISTORY_INSCRITS))
-            root.putArray(HISTORY_INSCRITS);
-        if (!root.has(HISTORY_CREES))
-            root.putArray(HISTORY_CREES);
-    }
-
-    private void updateHistoryArray(com.fasterxml.jackson.databind.node.ObjectNode root, String eventType,
-            Long eventId) {
-        com.fasterxml.jackson.databind.node.ArrayNode targetArray = "inscrit".equals(eventType)
-                ? (com.fasterxml.jackson.databind.node.ArrayNode) root.get(HISTORY_INSCRITS)
-                : (com.fasterxml.jackson.databind.node.ArrayNode) root.get(HISTORY_CREES);
-
-        if (!containsId(targetArray, eventId)) {
-            targetArray.add(eventId);
-        }
-    }
-
-    private boolean containsId(com.fasterxml.jackson.databind.node.ArrayNode array, Long id) {
-        for (com.fasterxml.jackson.databind.JsonNode node : array) {
-            if (node.asLong() == id) {
-                return true;
-            }
-        }
-        return false;
     }
 }

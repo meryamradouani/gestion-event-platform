@@ -35,9 +35,6 @@ public class EventService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
-    @Autowired
-    private com.events.eventservice.repository.UserRoleRepository userRoleRepository;
-
     @Value("${app.default-event-image:https://via.placeholder.com/600x400?text=Event+Image}")
     private String defaultEventImage;
 

@@ -23,7 +23,7 @@ public class ProfileController {
 
     // GET /profiles/{userId}
     @GetMapping("/{userId}")
-    public ResponseEntity<Object> getProfile(@PathVariable Long userId) {
+    public ResponseEntity<?> getProfile(@PathVariable Long userId) {
         Optional<Profile> profile = profileService.getProfileByUserId(userId);
 
         if (profile.isPresent()) {
@@ -37,7 +37,7 @@ public class ProfileController {
 
     // PUT /profiles/{userId}
     @PutMapping("/{userId}")
-    public ResponseEntity<Object> updateProfile(@PathVariable Long userId, @RequestBody Profile updatedProfile) {
+    public ResponseEntity<?> updateProfile(@PathVariable Long userId, @RequestBody Profile updatedProfile) {
         Profile result = profileService.updateProfile(userId, updatedProfile);
 
         if (result != null) {
@@ -69,8 +69,7 @@ public class ProfileController {
 
     // Upload Image: POST /profiles/{userId}/image
     @PostMapping("/{userId}/image")
-    public ResponseEntity<String> uploadImage(@PathVariable Long userId,
-            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+    public ResponseEntity<?> uploadImage(@PathVariable Long userId, @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
         try {
             profileService.uploadProfileImage(userId, file);
             return ResponseEntity.ok("Image uploaded successfully");
@@ -89,8 +88,7 @@ public class ProfileController {
 
         java.util.Optional<com.example.entity.Profile> profile = profileService.getProfileByUserId(userId);
         if (profile.isPresent()) {
-            java.util.Optional<com.example.entity.ProfileImage> imageOpt = profileService
-                    .getProfileImage(profile.get().getId());
+            java.util.Optional<com.example.entity.ProfileImage> imageOpt = profileService.getProfileImage(profile.get().getId());
             if (imageOpt.isPresent()) {
                 com.example.entity.ProfileImage image = imageOpt.get();
                 return ResponseEntity.ok()
