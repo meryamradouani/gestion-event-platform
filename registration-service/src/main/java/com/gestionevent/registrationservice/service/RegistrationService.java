@@ -17,8 +17,6 @@ public class RegistrationService {
     private final EventRegistrationRepository repository;
     private final RegistrationEventPublisher eventPublisher;
 
-    private static final String INSCRIPTION_NON_TROUVEE = "Inscription non trouvée";
-
     // S'inscrire à un événement
     @Transactional
     public EventRegistration registerUserToEvent(Long userId, Long eventId, Integer maxParticipants) {
@@ -47,6 +45,7 @@ public class RegistrationService {
 
         LocalDateTime eventDate = LocalDateTime.now().plusDays(7); // Date par défaut
 
+
         eventPublisher.publishRegistrationConfirmed(userId, eventId, eventTitle, eventDate);
 
         return saved;
@@ -56,7 +55,7 @@ public class RegistrationService {
     @Transactional
     public void unregisterUserFromEvent(Long userId, Long eventId) {
         EventRegistration registration = repository.findByUserIdAndEventId(userId, eventId)
-                .orElseThrow(() -> new RuntimeException(INSCRIPTION_NON_TROUVEE));
+                .orElseThrow(() -> new RuntimeException("Inscription non trouvée"));
 
         repository.delete(registration);
     }
@@ -84,7 +83,7 @@ public class RegistrationService {
     @Transactional
     public void updateAttendanceStatus(Long registrationId, String status) {
         EventRegistration registration = repository.findById(registrationId)
-                .orElseThrow(() -> new RuntimeException(INSCRIPTION_NON_TROUVEE));
+                .orElseThrow(() -> new RuntimeException("Inscription non trouvée"));
 
         // Valider le statut
         if (!List.of("pending", "present", "absent").contains(status)) {
@@ -99,7 +98,7 @@ public class RegistrationService {
     @Transactional
     public void generateQrCode(Long registrationId) {
         EventRegistration registration = repository.findById(registrationId)
-                .orElseThrow(() -> new RuntimeException(INSCRIPTION_NON_TROUVEE));
+                .orElseThrow(() -> new RuntimeException("Inscription non trouvée"));
 
         // Générer un QR code unique
         String qrCode = "EVENT-REG-" + registrationId + "-" +

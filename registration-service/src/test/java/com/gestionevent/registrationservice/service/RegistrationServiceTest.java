@@ -20,6 +20,9 @@ class RegistrationServiceTest {
     @Mock
     private EventRegistrationRepository repository;
 
+    @Mock
+    private RegistrationEventPublisher eventPublisher;
+
     @InjectMocks
     private RegistrationService registrationService;
 
