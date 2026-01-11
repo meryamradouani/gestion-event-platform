@@ -5,6 +5,7 @@ import com.events.eventservice.dto.EventCreatedMessage;
 import com.events.eventservice.dto.EventResponse;
 import com.events.eventservice.model.Event;
 import com.events.eventservice.model.EventImage;
+import com.events.eventservice.repository.UserRoleRepository;
 import com.events.eventservice.model.EventStatus;
 import com.events.eventservice.repository.EventImageRepository;
 import com.events.eventservice.repository.EventRepository;

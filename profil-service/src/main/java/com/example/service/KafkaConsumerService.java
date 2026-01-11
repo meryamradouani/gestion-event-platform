@@ -46,7 +46,7 @@ public class KafkaConsumerService {
     }
 
     // 3. Écouter la création d'un événement
-    @KafkaListener(topics = "event.created", groupId = "profile-group")
+    @KafkaListener(topics = "events.created", groupId = "profile-group")
     public void handleEventCreated(EventCreatedEvent event) {
         System.out.println("🎯 [Kafka] Event created by organizer: " +
                 event.getOrganizerId() + " - Event: " + event.getEventTitle());

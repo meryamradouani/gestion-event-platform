@@ -9,7 +9,7 @@ public class EventCreatedEvent {
     private Long eventId;
     private Long organizerId; // L'utilisateur qui a créé l'événement
     private String eventTitle;
-    private String eventType; // "conférence", "atelier", "fête"
+    private String eventDescription; // UPDATED: Match event-service
     private LocalDateTime eventDate;
     private String location;
     private LocalDateTime creationTime;
@@ -21,12 +21,12 @@ public class EventCreatedEvent {
 
     // Constructeur avec paramètres
     public EventCreatedEvent(Long eventId, Long organizerId, String eventTitle,
-            String eventType, LocalDateTime eventDate,
-            String location, LocalDateTime creationTime) {
+                             String eventDescription, LocalDateTime eventDate,
+                             String location, LocalDateTime creationTime) {
         this.eventId = eventId;
         this.organizerId = organizerId;
         this.eventTitle = eventTitle;
-        this.eventType = eventType;
+        this.eventDescription = eventDescription;
         this.eventDate = eventDate;
         this.location = location;
         this.creationTime = creationTime;
@@ -45,8 +45,8 @@ public class EventCreatedEvent {
         return eventTitle;
     }
 
-    public String getEventType() {
-        return eventType;
+    public String getEventDescription() {
+        return eventDescription;
     }
 
     public LocalDateTime getEventDate() {
@@ -74,8 +74,8 @@ public class EventCreatedEvent {
         this.eventTitle = eventTitle;
     }
 
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
+    public void setEventDescription(String eventDescription) {
+        this.eventDescription = eventDescription;
     }
 
     public void setEventDate(LocalDateTime eventDate) {
@@ -96,7 +96,7 @@ public class EventCreatedEvent {
                 "eventId=" + eventId +
                 ", organizerId=" + organizerId +
                 ", eventTitle='" + eventTitle + '\'' +
-                ", eventType='" + eventType + '\'' +
+                ", eventDescription='" + eventDescription + '\'' +
                 ", eventDate=" + eventDate +
                 ", location='" + location + '\'' +
                 ", creationTime=" + creationTime +
