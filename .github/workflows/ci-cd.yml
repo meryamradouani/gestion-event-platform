@@ -61,8 +61,7 @@ jobs:
             -Dsonar.projectKey=meryamradouani_gestion-event-platform \
             -Dsonar.organization=meryamradouani \
             -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.qualitygate.wait=false \
-            -Dsonar.java.binaries=auth-service/target/classes,event-service/target/classes,notification-service/target/classes,profil-service/target/classes,registration-service/target/classes,api-gateway/target/classes
+            -Dsonar.qualitygate.wait=false
 
   ## 🐳 STAGE 3: DOCKER ACTIVÉ ✅ (TOUTES LES BRANCHES)
   docker:
