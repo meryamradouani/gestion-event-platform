@@ -40,12 +40,15 @@ public class Event {
     private Long createdBy;
 
     @Enumerated(EnumType.STRING)
-    private EventStatus status = com.events.eventservice.model.EventStatus.ACTIVE;
+    @Builder.Default
+    private EventStatus status = EventStatus.ACTIVE;
 
     @Column(name = "created_at", updatable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at")
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @PreUpdate

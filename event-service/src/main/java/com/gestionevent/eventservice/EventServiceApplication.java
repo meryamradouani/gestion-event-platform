@@ -9,17 +9,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class EventServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(EventServiceApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(EventServiceApplication.class, args);
+    }
 
-	@GetMapping("/")
-	public String home() {
-		return "Event-Service est en marche! Utilisez /api/events pour accéder aux événements.";
-	}
+    @GetMapping("/")
+    public String home() {
+        return "Event-Service est en marche! Utilisez /api/events pour accéder aux événements.";
+    }
 
-	@GetMapping("/health")
-	public String health() {
-		return "OK";
-	}
+    @GetMapping("/health")
+    public String health() {
+        return "OK";
+    }
 }

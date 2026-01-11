@@ -377,7 +377,7 @@ public class EventService {
                 .id(event.getId())
                 .title(event.getTitle())
                 .description(event.getDescription())
-                .imageUrl(imageUrl) // ← AJOUTEZ CE CHAMP
+                .imageUrl(imageUrl)
                 .eventDate(event.getEventDate())
                 .location(event.getLocation())
                 .maxParticipants(event.getMaxParticipants())
