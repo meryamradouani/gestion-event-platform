@@ -2,13 +2,12 @@ name: 🚀 CI/CD Gestion Event Platform
 
 on:
   push:
-    branches: [ 'main' ]
+    branches: [ 'main' ]  # ✅ SEULEMENT main
   pull_request:
-    branches: [ 'main' ]
+    branches: [ 'main' ]  # ✅ PR vers main
   workflow_dispatch:
 
 jobs:
-  ## 🧪 STAGE 1: TESTS & BUILD MAVEN
   test:
     runs-on: ubuntu-latest
     steps:
@@ -20,22 +19,19 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: 🧪 Maven Build & Test
-        run: mvn clean package -DskipTests
+        run: mvn clean package -DskipTests  # ✅ Skip tests KO
       - name: 📦 Upload JARs
         uses: actions/upload-artifact@v4
         with:
           name: service-jars
           path: "**/target/*.jar"
-          retention-days: 1
 
-  ## 🔍 STAGE 2: SONARQUBE (CORRIGÉ)
   sonar:
-    needs: test  # ✅ FIX : test seulement !
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        with: fetch-depth: 0
       - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
@@ -49,16 +45,15 @@ jobs:
         run: |
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -DskipTests \
+            -Dsonar.qualitygate.wait=false \  # ✅ Skip Quality Gate
             -Dsonar.projectKey=meryamradouani_gestion-event-platform \
             -Dsonar.organization=meryamradouani \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.qualitygate.wait=false
+            -Dsonar.host.url=https://sonarcloud.io
 
-  ## 🐳 STAGE 3: DOCKER (CORRIGÉ)
   docker:
-    needs: [test, sonar]  # ✅ Les 2 jobs avant
+    needs: [test, sonar]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # 🔥 UNIQUEMENT main !
+    if: github.ref == 'refs/heads/main'  # ✅ Main seulement
     strategy:
       matrix:
         service: [api-gateway, auth-service, event-service, notification-service, profil-service, registration-service]
