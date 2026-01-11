@@ -65,4 +65,37 @@ class RegistrationServiceTest {
 
         assertEquals("Utilisateur déjà inscrit à cet événement", exception.getMessage());
     }
+
+    @Test
+    void testRegisterUserToEvent_EventFull() {
+        // Arrange
+        Long userId = 2L;
+        Long eventId = 1L;
+        int maxParticipants = 10;
+
+        when(repository.existsByUserIdAndEventId(userId, eventId)).thenReturn(false);
+        when(repository.countByEventId(eventId)).thenReturn(10L); // Déjà 10 inscrits
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> registrationService.registerUserToEvent(userId, eventId, maxParticipants));
+
+        assertEquals("Événement complet", exception.getMessage());
+    }
+
+    @Test
+    void testUnregisterUserFromEvent_Success() {
+        // Arrange
+        Long userId = 1L;
+        Long eventId = 1L;
+        EventRegistration registration = new EventRegistration(userId, eventId);
+
+        when(repository.findByUserIdAndEventId(userId, eventId)).thenReturn(Optional.of(registration));
+
+        // Act
+        registrationService.unregisterUserFromEvent(userId, eventId);
+
+        // Assert
+        verify(repository, times(1)).delete(registration);
+    }
 }
