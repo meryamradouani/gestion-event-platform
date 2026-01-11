@@ -9,9 +9,9 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>com.gestionevent</groupId>
-	<artifactId>gestion-event-backend</artifactId>
+	<artifactId>notification-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>GestionEvent</name>
+	<name>notification-service</name>
 	<description>Backend Spring Boot pour une application de gestion des événements</description>
 	<url/>
 	<licenses>
