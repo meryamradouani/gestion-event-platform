@@ -35,7 +35,7 @@ public class EventService {
     private KafkaProducerService kafkaProducerService;
 
     @Autowired
-    private EventService self;
+    private com.events.eventservice.repository.UserRoleRepository userRoleRepository;
 
     @Value("${app.default-event-image:https://via.placeholder.com/600x400?text=Event+Image}")
     private String defaultEventImage;
@@ -59,11 +59,14 @@ public class EventService {
 
     @Transactional
     public EventResponse createEvent(CreateEventRequest request, Long creatorId) {
-        return self.createEventWithImage(request, null, creatorId);
+        return createEventWithImage(request, null, creatorId);
     }
 
     @Transactional
     public EventResponse createEventWithImage(CreateEventRequest request, MultipartFile imageFile, Long creatorId) {
+        // Vérifier le rôle
+        checkOrganizerRole(creatorId);
+
         log.info("Création d'un nouvel événement avec image par l'utilisateur {}", creatorId);
 
         // Validation de la date
@@ -99,6 +102,9 @@ public class EventService {
     public EventResponse updateEvent(Long id, Event eventDetails, Long userId) {
         log.info("Mise à jour de l'événement avec ID: {}", id);
 
+        // Vérifier le rôle
+        checkOrganizerRole(userId);
+
         Event event = getEventEntityById(id);
 
         // Vérifier que l'utilisateur est le créateur
@@ -126,8 +132,11 @@ public class EventService {
 
     @Transactional
     public EventResponse updateEventWithImage(Long id, CreateEventRequest request, MultipartFile imageFile,
-            Long userId) {
+                                              Long userId) {
         log.info("Mise à jour complète de l'événement avec ID: {}", id);
+
+        // Vérifier le rôle
+        checkOrganizerRole(userId);
 
         Event event = getEventEntityById(id);
 
@@ -159,6 +168,9 @@ public class EventService {
     @Transactional
     public EventResponse updateEventImage(Long id, MultipartFile imageFile, Long userId) throws IOException {
         log.info("Mise à jour de l'image de l'événement avec ID: {}", id);
+
+        // Vérifier le rôle
+        checkOrganizerRole(userId);
 
         Event event = getEventEntityById(id);
 
@@ -195,6 +207,9 @@ public class EventService {
     public EventResponse deleteEventImage(Long id, Long userId) {
         log.info("Suppression de l'image de l'événement avec ID: {}", id);
 
+        // Vérifier le rôle
+        checkOrganizerRole(userId);
+
         Event event = getEventEntityById(id);
 
         // Vérifier que l'utilisateur est le créateur
@@ -223,6 +238,9 @@ public class EventService {
     public void deleteEvent(Long id, Long userId) {
         log.info("Suppression de l'événement avec ID: {}", id);
 
+        // Vérifier le rôle
+        checkOrganizerRole(userId);
+
         Event event = getEventEntityById(id);
 
         // Vérifier que l'utilisateur est le créateur
@@ -236,6 +254,23 @@ public class EventService {
         // Supprimer l'événement
         eventRepository.delete(event);
         log.info("Événement ID: {} supprimé avec succès", id);
+    }
+
+    // Vérification du rôle organisateur
+    private void checkOrganizerRole(Long userId) {
+        userRoleRepository.findById(userId).ifPresentOrElse(
+                userRole -> {
+                    if (!"organizer".equalsIgnoreCase(userRole.getRole())) {
+                        throw new SecurityException("Seuls les organisateurs peuvent effectuer cette action.");
+                    }
+                },
+                () -> {
+                    // Optionnel : Si l'utilisateur n'est pas trouvé (pas encore login ou erreur
+                    // sync),
+                    // on peut soit bloquer, soit laisser passer (politique par défaut).
+                    // Ici, on bloque par sécurité.
+                    throw new SecurityException("Utilisateur non identifié ou rôle inconnu.");
+                });
     }
 
     public java.util.Optional<EventImage> getEventImage(Long eventId) {
