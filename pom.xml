@@ -24,6 +24,10 @@
         <module>api-gateway</module>
     </modules>
 
+    <properties>
+        <sonar.qualitygate.wait>false</sonar.qualitygate.wait>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

@@ -46,6 +46,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
           
+      - name: 📦 Compile for SonarCloud
+        run: mvn clean compile -DskipTests
+        
       - name: 🔍 SonarCloud Analysis **ACTIVÉ**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,11 +60,11 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.qualitygate.wait=false  # ✅ Ne bloque PAS
 
-  ## 🐳 STAGE 3: DOCKER ACTIVÉ ✅
+  ## 🐳 STAGE 3: DOCKER ACTIVÉ ✅ (TOUTES LES BRANCHES)
   docker:
     needs: [test, sonar]  # ✅ Attend Sonar
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # ✅ UNIQUEMENT main
+    # ✅ DOCKER SUR TOUTES LES BRANCHES (main + PRs)
     strategy:
       matrix:
         service: [api-gateway, auth-service, event-service, notification-service, profil-service, registration-service]

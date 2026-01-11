@@ -8,6 +8,7 @@ import com.events.eventservice.model.EventImage;
 import com.events.eventservice.model.EventStatus;
 import com.events.eventservice.repository.EventImageRepository;
 import com.events.eventservice.repository.EventRepository;
+import com.events.eventservice.repository.UserRoleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,9 @@ public class EventService {
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
+
+    @Autowired
+    private UserRoleRepository userRoleRepository;
 
     @Value("${app.default-event-image:https://via.placeholder.com/600x400?text=Event+Image}")
     private String defaultEventImage;
@@ -129,7 +133,7 @@ public class EventService {
 
     @Transactional
     public EventResponse updateEventWithImage(Long id, CreateEventRequest request, MultipartFile imageFile,
-                                              Long userId) {
+            Long userId) {
         log.info("Mise à jour complète de l'événement avec ID: {}", id);
 
         // Vérifier le rôle
@@ -255,6 +259,9 @@ public class EventService {
 
     // Vérification du rôle organisateur
     private void checkOrganizerRole(Long userId) {
+        if (userId == null) {
+            throw new SecurityException("Utilisateur non authentifié.");
+        }
         userRoleRepository.findById(userId).ifPresentOrElse(
                 userRole -> {
                     if (!"organizer".equalsIgnoreCase(userRole.getRole())) {
