@@ -13,7 +13,7 @@ public class KafkaProducerService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${kafka.topics.event-created}")
-    private String eventCreatedTopic;  // UN SEUL topic
+    private String eventCreatedTopic; // UN SEUL topic
 
     public KafkaProducerService(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;

@@ -19,7 +19,7 @@ public class RegistrationConfirmedEvent {
 
     // Constructeur avec paramètres
     public RegistrationConfirmedEvent(Long userId, Long eventId, String eventTitle,
-                                      LocalDateTime eventDate, LocalDateTime registrationTime) {
+            LocalDateTime eventDate, LocalDateTime registrationTime) {
         this.userId = userId;
         this.eventId = eventId;
         this.eventTitle = eventTitle;

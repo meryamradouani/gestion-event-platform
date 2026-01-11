@@ -11,18 +11,16 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())  // ← Désactiver CSRF pour les tests
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/**").permitAll()  // ← Autoriser TOUTES les requêtes
-                        .anyRequest().permitAll()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                .csrf(csrf -> csrf.disable()) // ← Désactiver CSRF pour les tests
+                                .authorizeHttpRequests(authz -> authz
+                                                .requestMatchers("/**").permitAll() // ← Autoriser TOUTES les requêtes
+                                                .anyRequest().permitAll())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        return http.build();
-    }
+                return http.build();
+        }
 }

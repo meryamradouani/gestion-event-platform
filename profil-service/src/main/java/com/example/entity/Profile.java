@@ -44,7 +44,8 @@ public class Profile {
     private LocalDateTime updatedAt;
 
     // Constructeur par défaut
-    public Profile() {}
+    public Profile() {
+    }
 
     // Constructeur avec paramètres
     public Profile(Long userId, String fullName) {
