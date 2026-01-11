@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  ## 🧪 STAGE 1: TESTS & BUILD ✅ FIXÉ
+  ## 🧪 STAGE 1: TESTS & BUILD
   test:
     runs-on: ubuntu-latest
     steps:
@@ -21,19 +21,16 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
           
-      - name: 🧪 Maven Build **COMPLÈTE**
-        run: mvn clean install -DskipTests  # ✅ TOUS modules + target/classes
-      
-      - name: 📦 Upload JARs + CLASSES
+      - name: 🧪 Maven Build
+        run: mvn clean package -DskipTests
+
+      - name: 📦 Upload JARs
         uses: actions/upload-artifact@v4
         with:
-          name: maven-artifacts
-          path: |
-            **/target/*.jar
-            **/target/classes
-            **/target/test-classes
+          name: service-jars
+          path: "**/target/*.jar"
 
-  ## 🔍 STAGE 2: SONARCLOUD ✅ FIXÉ
+  ## 🔍 STAGE 2: SONARCLOUD ✅ FIX DÉFINITIF
   sonar:
     needs: test
     runs-on: ubuntu-latest
@@ -49,23 +46,21 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
           
-      - name: 📦 Download COMPLETE artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: maven-artifacts
-      
-      - name: 🔍 SonarCloud Analysis **PARFAIT**
+      - name: 🔍 SonarCloud Analysis **SIMPLIFIÉ & FIXÉ**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
+          # ✅ COMPILATION COMPLÈTE dans le sonar job
+          mvn clean install -DskipTests
+          # ✅ Sonar avec classes fraîchement compilées
           mvn sonar:sonar \
             -Dsonar.projectKey=meryamradouani_gestion-event-platform \
             -Dsonar.organization=meryamradouani \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.qualitygate.wait=false
 
-  ## 🐳 STAGE 3: DOCKER ✅ INCHANGÉ
+  ## 🐳 STAGE 3: DOCKER (INCHANGÉ)
   docker:
     needs: [test, sonar]
     runs-on: ubuntu-latest
@@ -78,8 +73,8 @@ jobs:
       - name: 📦 Download JARs
         uses: actions/download-artifact@v4
         with:
-          name: maven-artifacts  # ✅ Nom changé
-      
+          name: service-jars
+          
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
