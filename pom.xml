@@ -26,7 +26,6 @@
 
     <properties>
         <sonar.qualitygate.wait>false</sonar.qualitygate.wait>
-        <sonar.java.binaries></sonar.java.binaries>
     </properties>
 
     <build>
