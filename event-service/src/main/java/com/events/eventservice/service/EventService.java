@@ -34,9 +34,6 @@ public class EventService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
-    @Autowired
-    private EventService self;
-
     @Value("${app.default-event-image:https://via.placeholder.com/600x400?text=Event+Image}")
     private String defaultEventImage;
 
@@ -59,7 +56,7 @@ public class EventService {
 
     @Transactional
     public EventResponse createEvent(CreateEventRequest request, Long creatorId) {
-        return self.createEventWithImage(request, null, creatorId);
+        return createEventWithImage(request, null, creatorId);
     }
 
     @Transactional

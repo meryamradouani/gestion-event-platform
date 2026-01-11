@@ -23,7 +23,6 @@ public class Event {
     @Size(max = 2000, message = "La description ne doit pas dépasser 2000 caractères")
     private String description;
 
-
     @Future(message = "La date de l'événement doit être dans le futur")
     @Column(name = "event_date")
     private LocalDateTime eventDate;

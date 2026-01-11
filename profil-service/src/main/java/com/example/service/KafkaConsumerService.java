@@ -6,10 +6,9 @@ import com.example.dto.*;
 import com.example.entity.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import com.example.dto.UserAuthenticatedEvent;  // IMPORTANT : DTO
+import com.example.dto.UserAuthenticatedEvent; // IMPORTANT : DTO
 import com.example.dto.RegistrationConfirmedEvent;
 import com.example.dto.EventCreatedEvent;
-
 
 @Service
 public class KafkaConsumerService {
@@ -29,8 +28,7 @@ public class KafkaConsumerService {
         profileService.createOrUpdateProfileAfterLogin(
                 event.getUserId(),
                 event.getEmail(),
-                event.getFullName()
-        );
+                event.getFullName());
     }
 
     // 2. Écouter l'inscription à un événement
@@ -43,7 +41,7 @@ public class KafkaConsumerService {
         profileService.addEventToHistory(
                 event.getUserId(),
                 event.getEventId(),
-                "inscrit"  // Type d'historique
+                "inscrit" // Type d'historique
         );
     }
 
@@ -57,7 +55,7 @@ public class KafkaConsumerService {
         profileService.addEventToHistory(
                 event.getOrganizerId(),
                 event.getEventId(),
-                "créé"  // Type d'historique
+                "créé" // Type d'historique
         );
     }
 }
