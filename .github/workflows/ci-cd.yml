@@ -46,6 +46,9 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
           
+      - name: 📦 Compile for SonarCloud
+        run: mvn clean compile -DskipTests
+        
       - name: 🔍 SonarCloud Analysis **ACTIVÉ**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
