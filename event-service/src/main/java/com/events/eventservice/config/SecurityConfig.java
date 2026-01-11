@@ -1,4 +1,4 @@
-package com.gestionevent.eventservice.config;
+package com.events.eventservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

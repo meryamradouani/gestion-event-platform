@@ -1,6 +1,6 @@
-package com.gestionevent.eventservice.service;
+package com.events.eventservice.service;
 
-import com.gestionevent.eventservice.dto.EventCreatedMessage;
+import com.events.eventservice.dto.EventCreatedMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;

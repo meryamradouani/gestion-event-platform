@@ -1,4 +1,4 @@
-package com.gestionevent.eventservice.config;
+package com.events.eventservice.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;

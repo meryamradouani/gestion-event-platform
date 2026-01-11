@@ -1,13 +1,13 @@
-package com.gestionevent.eventservice.service;
+package com.events.eventservice.service;
 
-import com.gestionevent.eventservice.dto.CreateEventRequest;
-import com.gestionevent.eventservice.dto.EventCreatedMessage;
-import com.gestionevent.eventservice.dto.EventResponse;
-import com.gestionevent.eventservice.model.Event;
-import com.gestionevent.eventservice.model.EventImage;
-import com.gestionevent.eventservice.model.EventStatus;
-import com.gestionevent.eventservice.repository.EventImageRepository;
-import com.gestionevent.eventservice.repository.EventRepository;
+import com.events.eventservice.dto.CreateEventRequest;
+import com.events.eventservice.dto.EventCreatedMessage;
+import com.events.eventservice.dto.EventResponse;
+import com.events.eventservice.model.Event;
+import com.events.eventservice.model.EventImage;
+import com.events.eventservice.model.EventStatus;
+import com.events.eventservice.repository.EventImageRepository;
+import com.events.eventservice.repository.EventRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,4 +1,4 @@
-package com.gestionevent.eventservice;
+package com.events.eventservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

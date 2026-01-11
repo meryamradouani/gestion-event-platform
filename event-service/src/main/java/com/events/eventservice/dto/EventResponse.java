@@ -1,4 +1,4 @@
-package com.gestionevent.eventservice.dto;
+package com.events.eventservice.dto;
 
 import com.events.eventservice.model.EventStatus;
 import lombok.Builder;

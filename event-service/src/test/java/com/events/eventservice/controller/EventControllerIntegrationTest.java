@@ -1,4 +1,4 @@
-package com.gestionevent.eventservice.controller;
+package com.events.eventservice.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

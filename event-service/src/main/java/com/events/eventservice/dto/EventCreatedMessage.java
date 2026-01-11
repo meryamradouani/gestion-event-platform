@@ -1,4 +1,4 @@
-package com.gestionevent.eventservice.dto;
+package com.events.eventservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

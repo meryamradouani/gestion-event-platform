@@ -1,4 +1,4 @@
-package com.gestionevent.eventservice.model;
+package com.events.eventservice.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;

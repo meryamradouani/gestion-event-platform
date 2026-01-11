@@ -1,4 +1,4 @@
-package com.gestionevent.eventservice;
+package com.events.eventservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,9 +1,9 @@
-package com.gestionevent.eventservice.controller;
+package com.events.eventservice.controller;
 
-import com.gestionevent.eventservice.dto.CreateEventRequest;
-import com.gestionevent.eventservice.dto.EventResponse;
-import com.gestionevent.eventservice.model.Event;
-import com.gestionevent.eventservice.service.EventService;
+import com.events.eventservice.dto.CreateEventRequest;
+import com.events.eventservice.dto.EventResponse;
+import com.events.eventservice.model.Event;
+import com.events.eventservice.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
