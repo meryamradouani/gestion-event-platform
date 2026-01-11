@@ -259,6 +259,9 @@ public class EventService {
 
     // Vérification du rôle organisateur
     private void checkOrganizerRole(Long userId) {
+        if (userId == null) {
+            throw new SecurityException("Utilisateur non authentifié.");
+        }
         userRoleRepository.findById(userId).ifPresentOrElse(
                 userRole -> {
                     if (!"organizer".equalsIgnoreCase(userRole.getRole())) {
