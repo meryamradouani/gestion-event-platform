@@ -1,6 +1,6 @@
-package com.example.repository;
+package com.gestionevent.profilservice.repository;
 
-import com.example.entity.Profile;
+import com.gestionevent.profilservice.entity.Profile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

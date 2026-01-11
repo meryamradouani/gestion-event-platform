@@ -1,6 +1,4 @@
-package com.example.dto;
-
-// src/main/java/com/events/profile/dto/UserAuthenticatedEvent.java
+package com.gestionevent.profilservice.dto;
 
 import java.time.LocalDateTime;
 

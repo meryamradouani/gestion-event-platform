@@ -1,6 +1,4 @@
-package com.example.dto;
-
-// src/main/java/com/events/profile/dto/EventCreatedEvent.java
+package com.gestionevent.profilservice.dto;
 
 import java.time.LocalDateTime;
 

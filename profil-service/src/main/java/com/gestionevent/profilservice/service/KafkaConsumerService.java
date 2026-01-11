@@ -1,14 +1,12 @@
-package com.example.service;
+package com.gestionevent.profilservice.service;
 
-// src/main/java/com/events/profile/service/KafkaConsumerService.java
-
-import com.example.dto.*;
-import com.example.entity.Profile;
+import com.gestionevent.profilservice.dto.*;
+import com.gestionevent.profilservice.entity.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import com.example.dto.UserAuthenticatedEvent; // IMPORTANT : DTO
-import com.example.dto.RegistrationConfirmedEvent;
-import com.example.dto.EventCreatedEvent;
+import com.gestionevent.profilservice.dto.UserAuthenticatedEvent;
+import com.gestionevent.profilservice.dto.RegistrationConfirmedEvent;
+import com.gestionevent.profilservice.dto.EventCreatedEvent;
 
 @Service
 public class KafkaConsumerService {

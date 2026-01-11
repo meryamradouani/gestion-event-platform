@@ -1,4 +1,4 @@
-package com.example.entity;
+package com.gestionevent.profilservice.entity;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;

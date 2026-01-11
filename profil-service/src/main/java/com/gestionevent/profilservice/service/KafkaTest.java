@@ -1,8 +1,6 @@
-package com.example.service;
+package com.gestionevent.profilservice.service;
 
-// src/main/java/com/events/profile/service/KafkaTest.java
-
-import com.example.dto.*;
+import com.gestionevent.profilservice.dto.*;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 

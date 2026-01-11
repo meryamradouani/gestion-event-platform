@@ -1,10 +1,10 @@
-package com.example.demo;
+package com.gestionevent.profilservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DemoApplicationTests {
+class ProfilServiceApplicationTests {
 
     @Test
     void contextLoads() {
