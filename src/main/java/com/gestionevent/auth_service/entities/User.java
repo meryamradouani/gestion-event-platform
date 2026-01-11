@@ -11,33 +11,27 @@ public class User {
     private Long id;
 
     @Column(name = "full_name", nullable = false)
-    private String fullName; // Remplace firstName et lastName
+    private String fullName;
 
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
-    private String password; // Mappe sur la colonne password_hash du SQL
+    private String password;
 
     @Column(nullable = false)
     private String role; // "STUDENT" ou "ORGANIZER"
 
-    // --- Champs spécifiques : Étudiant (selon gestionevent.sql) ---
-    @Column(name = "cne")
-    private String cne;
+    // --- Champs spécifiques (Mise à jour) ---
 
     @Column(name = "filiere")
-    private String filiere;
+    private String filiere; // Pour l'étudiant
 
-    @Column(name = "niveau")
-    private String niveau;
-
-    // --- Champs spécifiques : Organisateur (selon gestionevent.sql) ---
     @Column(name = "nom_etablissement")
-    private String nomEtablissement;
+    private String nomEtablissement; // École (Étudiant) OU Organisation (Organisateur)
 
     @Column(name = "type_organisateur")
-    private String typeOrganisateur;
+    private String typeOrganisateur; // Pour l'organisateur (Club, Asso, etc.)
 
     // --- Constructeurs ---
     public User() {
@@ -85,15 +79,6 @@ public class User {
         this.role = role;
     }
 
-    // Étudiant
-    public String getCne() {
-        return cne;
-    }
-
-    public void setCne(String cne) {
-        this.cne = cne;
-    }
-
     public String getFiliere() {
         return filiere;
     }
@@ -102,15 +87,6 @@ public class User {
         this.filiere = filiere;
     }
 
-    public String getNiveau() {
-        return niveau;
-    }
-
-    public void setNiveau(String niveau) {
-        this.niveau = niveau;
-    }
-
-    // Organisateur
     public String getNomEtablissement() {
         return nomEtablissement;
     }

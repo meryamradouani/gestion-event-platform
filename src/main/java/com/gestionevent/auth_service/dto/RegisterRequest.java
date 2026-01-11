@@ -3,17 +3,21 @@ package com.gestionevent.auth_service.dto;
 public class RegisterRequest {
 
     // --- Champs Communs ---
-    private String fullName; // Remplace firstName et lastName
+    private String fullName;
     private String email;
     private String password;
+    private String role; // "STUDENT" ou "ORGANIZER" (Essentiel pour la DB)
 
-    // --- Champs Spécifiques : Étudiant (selon gestionevent.sql) ---
-    private String cne;
+    // --- Champs Spécifiques (Simplifiés) ---
+    // Pour l'étudiant : Filière
     private String filiere;
-    private String niveau;
 
-    // --- Champs Spécifiques : Organisateur (selon gestionevent.sql) ---
+    // Pour l'étudiant : Établissement
+    // POUR l'organisateur : Nom de l'organisation
+    // (On réutilise le champ existant dans la DB)
     private String nomEtablissement;
+
+    // Pour l'organisateur : Type (Club, Asso, etc.)
     private String typeOrganisateur;
 
     // --- Constructeurs ---
@@ -47,15 +51,15 @@ public class RegisterRequest {
         this.password = password;
     }
 
-    // Étudiant
-    public String getCne() {
-        return cne;
+    public String getRole() {
+        return role;
     }
 
-    public void setCne(String cne) {
-        this.cne = cne;
+    public void setRole(String role) {
+        this.role = role;
     }
 
+    // Filière (Étudiant uniquement)
     public String getFiliere() {
         return filiere;
     }
@@ -64,15 +68,9 @@ public class RegisterRequest {
         this.filiere = filiere;
     }
 
-    public String getNiveau() {
-        return niveau;
-    }
-
-    public void setNiveau(String niveau) {
-        this.niveau = niveau;
-    }
-
-    // Organisateur
+    // Ce champ porte deux casquettes maintenant :
+    // 1. Établissement de l'étudiant
+    // 2. Nom de l'organisation de l'organisateur
     public String getNomEtablissement() {
         return nomEtablissement;
     }
@@ -81,6 +79,7 @@ public class RegisterRequest {
         this.nomEtablissement = nomEtablissement;
     }
 
+    // Type Organisateur (Organisateur uniquement)
     public String getTypeOrganisateur() {
         return typeOrganisateur;
     }
