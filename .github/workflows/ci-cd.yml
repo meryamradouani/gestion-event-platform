@@ -1,0 +1,88 @@
+name: 🚀 CI/CD Gestion Event Platform
+
+on:
+  push:
+    branches: [ 'main' ]
+  pull_request:
+    branches: [ 'main' ]
+  workflow_dispatch:
+
+jobs:
+  ## 🧪 STAGE 1: TESTS & BUILD
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+          
+      - name: 🧪 Maven Build
+        run: mvn clean package -DskipTests
+
+      - name: 📦 Upload JARs
+        uses: actions/upload-artifact@v4
+        with:
+          name: service-jars
+          path: "**/target/*.jar"
+
+  ## 🔍 STAGE 2: SONARCLOUD ✅ FIX DÉFINITIF
+  sonar:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+          
+      - name: 🔍 SonarCloud Analysis **SIMPLIFIÉ & FIXÉ**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          # ✅ COMPILATION COMPLÈTE dans le sonar job
+          mvn clean install -DskipTests
+          # ✅ Sonar avec classes fraîchement compilées
+          mvn sonar:sonar \
+            -Dsonar.projectKey=meryamradouani_gestion-event-platform \
+            -Dsonar.organization=meryamradouani \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.qualitygate.wait=false
+
+  ## 🐳 STAGE 3: DOCKER (INCHANGÉ)
+  docker:
+    needs: [test, sonar]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api-gateway, auth-service, event-service, notification-service, profil-service, registration-service]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 📦 Download JARs
+        uses: actions/download-artifact@v4
+        with:
+          name: service-jars
+          
+      - name: 🤖 Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: meryamm
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: 🐳 Build & Push
+        run: |
+          docker build -t meryamm/gestion_event-${{ matrix.service }}:latest \
+            -f ${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
+          docker push meryamm/gestion_event-${{ matrix.service }}:latest

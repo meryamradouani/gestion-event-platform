@@ -1,0 +1,60 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-route
+          uri: http://auth-service:8081
+          predicates:
+            - Path=/auth/**
+          filters:
+            - StripPrefix=1
+        
+        - id: registration-route
+          uri: http://registration-service:8082
+          predicates:
+            - Path=/registration/**
+          filters:
+            - StripPrefix=1
+
+        - id: event-route
+          uri: http://event-service:8083
+          predicates:
+            - Path=/event/**
+          filters:
+            - StripPrefix=1
+
+        - id: notification-route
+          uri: http://notification-service:8080
+          predicates:
+            - Path=/notification/**
+          filters:
+            - StripPrefix=1
+
+        - id: profile-route
+          uri: http://profil-service:8085
+          predicates:
+            - Path=/profile/**
+          filters:
+            - StripPrefix=1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
