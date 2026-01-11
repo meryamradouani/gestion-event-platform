@@ -1,25 +1,7 @@
 package com.gestionevent.eventservice;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@SpringBootApplication
-@RestController
+// DUMMY CLASS TO PREVENT MAVEN FROM FINDING MULTIPLE MAIN CLASSES
+// THIS FILE IS MARKED FOR DELETION
 public class EventServiceApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(EventServiceApplication.class, args);
-    }
-
-    @GetMapping("/")
-    public String home() {
-        return "Event-Service est en marche! Utilisez /api/events pour accéder aux événements.";
-    }
-
-    @GetMapping("/health")
-    public String health() {
-        return "OK";
-    }
+    // Removed to resolve build conflict. This class is obsolete.
 }
