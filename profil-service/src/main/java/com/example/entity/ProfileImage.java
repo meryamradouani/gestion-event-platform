@@ -25,12 +25,16 @@ public class ProfileImage {
     @Column(name = "image_data", columnDefinition = "LONGBLOB")
     private byte[] imageData;
 
-    @Column(name = "content_type")
-    private String contentType; // e.g., "image/jpeg", "image/png"
+    @Column(name = "file_name")
+    private String fileName;
 
-    public ProfileImage(Long profileId, byte[] imageData, String contentType) {
+    @Column(name = "file_type")
+    private String fileType; // e.g., "image/jpeg", "image/png"
+
+    public ProfileImage(Long profileId, byte[] imageData, String fileName, String fileType) {
         this.profileId = profileId;
         this.imageData = imageData;
-        this.contentType = contentType;
+        this.fileName = fileName;
+        this.fileType = fileType;
     }
 }

@@ -1,9 +1,14 @@
 package com.example.service;
 
 import com.example.entity.Profile;
+import com.example.entity.ProfileImage;
+import com.example.repository.ProfileImageRepository;
 import com.example.repository.ProfileRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -11,170 +16,128 @@ import java.util.Optional;
 public class ProfileService {
 
     private final ProfileRepository profileRepository;
-    private final com.example.repository.ProfileImageRepository profileImageRepository;
+    private final ProfileImageRepository profileImageRepository;
 
-    public ProfileService(ProfileRepository profileRepository, com.example.repository.ProfileImageRepository profileImageRepository) {
+    public ProfileService(ProfileRepository profileRepository, ProfileImageRepository profileImageRepository) {
         this.profileRepository = profileRepository;
         this.profileImageRepository = profileImageRepository;
     }
 
     // Upload profile image
-    public void uploadProfileImage(Long userId, org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
-        Optional<Profile> profileOpt = profileRepository.findByUserId(userId);
+    public void uploadProfileImage(Long profileId, MultipartFile file) throws IOException {
+        Optional<Profile> profileOpt = profileRepository.findById(profileId);
         if (profileOpt.isPresent()) {
             Profile profile = profileOpt.get();
-            Optional<com.example.entity.ProfileImage> existingImage = profileImageRepository.findByProfileId(profile.getId());
 
-            com.example.entity.ProfileImage image;
-            if (existingImage.isPresent()) {
-                image = existingImage.get();
-                image.setImageData(file.getBytes());
-                image.setContentType(file.getContentType());
-            } else {
-                image = new com.example.entity.ProfileImage(profile.getId(), file.getBytes(), file.getContentType());
-            }
-            profileImageRepository.save(image);
+            Optional<ProfileImage> existingImage = profileImageRepository.findByProfileId(profileId);
+            ProfileImage profileImage = existingImage.orElse(new ProfileImage());
 
-            // Met à jour l'URL (optionnel si on veut garder une trace dans text, mais on va le générer dynamiquement plutôt)
-            // profile.setProfilePicUrl("http://localhost:8085/profiles/" + profile.getId() + "/image");
-            // profileRepository.save(profile);
+            profileImage.setProfileId(profileId);
+            profileImage.setImageData(file.getBytes());
+            profileImage.setFileName(file.getOriginalFilename());
+            profileImage.setFileType(file.getContentType());
+
+            profileImageRepository.save(profileImage);
         }
     }
 
-    public Optional<com.example.entity.ProfileImage> getProfileImage(Long profileId) {
+    // Récupérer les données de l'image
+    public Optional<ProfileImage> getProfileImage(Long profileId) {
         return profileImageRepository.findByProfileId(profileId);
     }
 
-    // Récupérer un profil par userId
-    public Optional<Profile> getProfileByUserId(Long userId) {
-        Optional<Profile> profile = profileRepository.findByUserId(userId);
+    // Récupérer un profil par son ID interne (profileId)
+    public Optional<Profile> getProfileById(Long profileId) {
+        Optional<Profile> profile = profileRepository.findById(profileId);
         profile.ifPresent(p -> {
-            p.setProfilePicUrl("http://localhost:8085/profiles/" + p.getId() + "/image");
+            p.setProfilePicUrl("http://localhost:8085/profiles/image/" + p.getId());
         });
         return profile;
     }
 
-    // Créer un nouveau profil
-    public Profile createProfile(Long userId, String fullName, String email) {
-        Profile profile = new Profile(userId, fullName);
-        profile.setLastLogin(LocalDateTime.now());
-        return profileRepository.save(profile);
+    // Récupérer un profil par userId (utile pour Kafka)
+    public Optional<Profile> getProfileByUserId(Long userId) {
+        return profileRepository.findByUserId(userId);
     }
 
-    // Mettre à jour un profil
-    public Profile updateProfile(Long userId, Profile updatedProfile) {
-        Optional<Profile> existingProfile = profileRepository.findByUserId(userId);
+    // Modifier un profil par son ID interne
+    public Profile updateProfile(Long profileId, Profile updatedProfile) {
+        Optional<Profile> existingProfile = profileRepository.findById(profileId);
 
         if (existingProfile.isPresent()) {
             Profile profile = existingProfile.get();
-
-            // Mettre à jour seulement les champs autorisés
-            if (updatedProfile.getFullName() != null) {
-                profile.setFullName(updatedProfile.getFullName());
-            }
-            if (updatedProfile.getBio() != null) {
-                profile.setBio(updatedProfile.getBio());
-            }
-            if (updatedProfile.getProfilePicUrl() != null) {
-                profile.setProfilePicUrl(updatedProfile.getProfilePicUrl());
-            }
-
-            profile.setLastLogin(LocalDateTime.now());
+            profile.setFullName(updatedProfile.getFullName());
+            profile.setBio(updatedProfile.getBio());
+            
+            // Mise à jour des nouveaux champs si fournis
+            if (updatedProfile.getInstitution() != null) profile.setInstitution(updatedProfile.getInstitution());
+            if (updatedProfile.getMajor() != null) profile.setMajor(updatedProfile.getMajor());
+            if (updatedProfile.getOrganizationName() != null) profile.setOrganizationName(updatedProfile.getOrganizationName());
+            if (updatedProfile.getOrganizationType() != null) profile.setOrganizationType(updatedProfile.getOrganizationType());
+            
             return profileRepository.save(profile);
         }
-
-        return null; // Ou lever une exception
+        return null;
     }
 
     // Créer ou mettre à jour le profil après connexion (Kafka)
-    public void createOrUpdateProfileAfterLogin(Long userId, String email, String fullName) {
+    public void createOrUpdateProfileAfterLogin(Long userId, String email, String fullName, String role,
+                                               String institution, String major, String organizationName, String organizationType) {
         Optional<Profile> existingProfile = profileRepository.findByUserId(userId);
 
         if (existingProfile.isPresent()) {
-            // Profil existe : on met à jour la date de connexion
             Profile profile = existingProfile.get();
             profile.setLastLogin(LocalDateTime.now());
+            
+            if (role != null) {
+                profile.setUserType(role.toUpperCase());
+            }
 
-            // Si le nom change, on peut le mettre à jour ici (Optionnel, mais logique si on veut que le profil reflète le dernier login)
             if (fullName != null && !fullName.isEmpty()) {
                 profile.setFullName(fullName);
             }
 
+            if (institution != null) profile.setInstitution(institution);
+            if (major != null) profile.setMajor(major);
+            if (organizationName != null) profile.setOrganizationName(organizationName);
+            if (organizationType != null) profile.setOrganizationType(organizationType);
+            
             profileRepository.save(profile);
-            System.out.println("✅ [Service] Updated last_login for existing user: " + userId);
+            System.out.println("✅ [Service] Updated profile (login) for user: " + userId);
         } else {
-            // Profil n'existe pas : on le crée avec le fullName, ou email, ou User ID par défaut
             String nameToUse = (fullName != null && !fullName.isEmpty()) ? fullName : (email != null ? email : "User " + userId);
             Profile newProfile = new Profile(userId, nameToUse);
             newProfile.setLastLogin(LocalDateTime.now());
+            if (role != null) {
+                newProfile.setUserType(role.toUpperCase());
+            }
+
+            newProfile.setInstitution(institution);
+            newProfile.setMajor(major);
+            newProfile.setOrganizationName(organizationName);
+            newProfile.setOrganizationType(organizationType);
+
             profileRepository.save(newProfile);
-            System.out.println("✅ [Service] Created new profile for user: " + userId);
+            System.out.println("✅ [Service] Created new profile for user: " + userId + " as " + role);
         }
     }
 
-    // Mettre à jour le dernier login - VERSION UNIQUE
-    public void updateLastLogin(Long userId) {
-        profileRepository.findByUserId(userId).ifPresent(profile -> {
-            profile.setLastLogin(LocalDateTime.now());
-            profileRepository.save(profile);
-            System.out.println("✅ Last login updated for user: " + userId);
-        });
-    }
-
     // Ajouter un événement à l'historique
-    public void addEventToHistory(Long userId, Long eventId, String eventType) {
-        profileRepository.findByUserId(userId).ifPresent(profile -> {
-            try {
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                com.fasterxml.jackson.databind.node.ObjectNode root;
-                String history = profile.getEventsHistory();
-
-                if (history == null || history.trim().isEmpty()) {
-                    root = mapper.createObjectNode();
-                    root.putArray("inscrits");
-                    root.putArray("créés");
-                } else {
-                    try {
-                        root = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(history);
-                    } catch (Exception e) {
-                        // Si l'historique est corrompu, on repart de zéro
-                        root = mapper.createObjectNode();
-                        root.putArray("inscrits");
-                        root.putArray("créés");
-                    }
-                }
-
-                // Initialiser les tableaux s'ils manquent
-                if (!root.has("inscrits")) root.putArray("inscrits");
-                if (!root.has("créés")) root.putArray("créés");
-
-                com.fasterxml.jackson.databind.node.ArrayNode targetArray;
-                if ("inscrit".equals(eventType)) {
-                    targetArray = (com.fasterxml.jackson.databind.node.ArrayNode) root.get("inscrits");
-                } else {
-                    targetArray = (com.fasterxml.jackson.databind.node.ArrayNode) root.get("créés");
-                }
-
-                // Ajouter l'ID s'il n'est pas déjà présent (éviter doublons)
-                boolean exists = false;
-                for (com.fasterxml.jackson.databind.JsonNode node : targetArray) {
-                    if (node.asLong() == eventId) {
-                        exists = true;
-                        break;
-                    }
-                }
-                if (!exists) {
-                    targetArray.add(eventId);
-                }
-
-                profile.setEventsHistory(mapper.writeValueAsString(root));
-                profileRepository.save(profile);
-                System.out.println("✅ Event " + eventId + " added to history for user: " + userId);
-
-            } catch (Exception e) {
-                System.err.println("❌ Error updating history: " + e.getMessage());
-                e.printStackTrace();
+    @Transactional
+    public void addEventToHistory(Long userId, Long eventId, String type) {
+        Optional<Profile> profileOpt = profileRepository.findByUserId(userId);
+        if (profileOpt.isPresent()) {
+            Profile profile = profileOpt.get();
+            String history = profile.getEventsHistory();
+            
+            // Mise à jour simple (à améliorer avec une vraie gestion JSON)
+            String newEntry = "{\"eventId\":" + eventId + ",\"type\":\"" + type + "\",\"date\":\"" + LocalDateTime.now() + "\"}";
+            if (history == null || history.isEmpty() || history.equals("{}")) {
+                profile.setEventsHistory("[" + newEntry + "]");
+            } else {
+                profile.setEventsHistory(history.replace("]", "," + newEntry + "]"));
             }
-        });
+            profileRepository.save(profile);
+        }
     }
 }
