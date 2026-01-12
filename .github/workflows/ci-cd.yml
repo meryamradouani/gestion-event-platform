@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  ## 🧪 STAGE 1: TESTS & BUILD ✅ FIXÉ
+  ## 🧪 STAGE 1: TESTS & BUILD
   test:
     runs-on: ubuntu-latest
     steps:
@@ -20,9 +20,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
-          
+      
       - name: 🧪 Maven Build **COMPLÈTE**
-        run: mvn clean install -DskipTests  # ✅ TOUS modules + target/classes
+        run: mvn clean install -DskipTests
       
       - name: 📦 Upload JARs + CLASSES
         uses: actions/upload-artifact@v4
@@ -31,9 +31,8 @@ jobs:
           path: |
             **/target/*.jar
             **/target/classes
-            **/target/test-classes
 
-  ## 🔍 STAGE 2: SONARCLOUD ✅ FIXÉ
+  ## 🔍 STAGE 2: SONARCLOUD
   sonar:
     needs: test
     runs-on: ubuntu-latest
@@ -48,7 +47,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
-          
+      
       - name: 📦 Download COMPLETE artifacts
         uses: actions/download-artifact@v4
         with:
@@ -65,9 +64,10 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.qualitygate.wait=false
 
-  ## 🐳 STAGE 3: DOCKER ✅ INCHANGÉ
+  ## 🐳 STAGE 3: DOCKER (main uniquement)
   docker:
     needs: [test, sonar]
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -78,16 +78,15 @@ jobs:
       - name: 📦 Download JARs
         uses: actions/download-artifact@v4
         with:
-          name: maven-artifacts  # ✅ Nom changé
+          name: maven-artifacts
       
       - name: 🤖 Docker Login
         uses: docker/login-action@v3
         with:
           username: meryamm
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          
+      
       - name: 🐳 Build & Push
         run: |
-          docker build -t meryamm/gestion_event-${{ matrix.service }}:latest \
-            -f ${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
-          docker push meryamm/gestion_event-${{ matrix.service }}:latest
+          docker build -t meryamm/gestion-event-${{ matrix.service }}:latest -f ${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
+          docker push meryamm/gestion-event-${{ matrix.service }}:latest
