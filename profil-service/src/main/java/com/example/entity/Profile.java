@@ -14,20 +14,32 @@ public class Profile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Transient
+    private String profilePicUrl;
+
     @Column(name = "user_id", unique = true, nullable = false)
     private Long userId;
+
+    @Column(name = "user_type", length = 50)
+    private String userType; // "STUDENT" or "ORGANIZER"
 
     @Column(name = "full_name", length = 150)
     private String fullName;
 
-    @Column(name = "profile_pic_url", length = 255)
-    private String profilePicUrl;
+    @Column(name = "institution", length = 255)
+    private String institution;
+
+    @Column(name = "major", length = 255)
+    private String major;
+
+    @Column(name = "organization_name", length = 255)
+    private String organizationName;
+
+    @Column(name = "organization_type", length = 100)
+    private String organizationType;
 
     @Column(columnDefinition = "TEXT")
     private String bio;
-
-    @Column(columnDefinition = "JSON")
-    private String favorites;
 
     @Column(name = "events_history", columnDefinition = "JSON")
     private String eventsHistory;
@@ -44,8 +56,7 @@ public class Profile {
     private LocalDateTime updatedAt;
 
     // Constructeur par défaut
-    public Profile() {
-    }
+    public Profile() {}
 
     // Constructeur avec paramètres
     public Profile(Long userId, String fullName) {
@@ -74,16 +85,32 @@ public class Profile {
         return bio;
     }
 
-    public String getFavorites() {
-        return favorites;
-    }
-
     public String getEventsHistory() {
         return eventsHistory;
     }
 
     public LocalDateTime getLastLogin() {
         return lastLogin;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public String getInstitution() {
+        return institution;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    public String getOrganizationType() {
+        return organizationType;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -115,10 +142,6 @@ public class Profile {
         this.bio = bio;
     }
 
-    public void setFavorites(String favorites) {
-        this.favorites = favorites;
-    }
-
     public void setEventsHistory(String eventsHistory) {
         this.eventsHistory = eventsHistory;
     }
@@ -129,6 +152,26 @@ public class Profile {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
+    public void setInstitution(String institution) {
+        this.institution = institution;
+    }
+
+    public void setMajor(String major) {
+        this.major = major;
+    }
+
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
+    }
+
+    public void setOrganizationType(String organizationType) {
+        this.organizationType = organizationType;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

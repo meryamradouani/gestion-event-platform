@@ -1,12 +1,17 @@
 package com.example.controller;
 
 import com.example.entity.Profile;
+import com.example.entity.ProfileImage;
 import com.example.service.KafkaTest;
 import com.example.service.ProfileService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,86 +21,75 @@ import java.util.Optional;
 public class ProfileController {
 
     private final ProfileService profileService;
+    private final KafkaTest kafkaTest;
 
-    public ProfileController(ProfileService profileService) {
+    public ProfileController(ProfileService profileService, KafkaTest kafkaTest) {
         this.profileService = profileService;
+        this.kafkaTest = kafkaTest;
     }
 
-    // GET /profiles/{userId}
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> getProfile(@PathVariable Long userId) {
-        Optional<Profile> profile = profileService.getProfileByUserId(userId);
+    // GET /profiles/{id} -> Utilise l'ID interne de la table profiles
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getProfile(@PathVariable Long id) {
+        System.out.println("🚀 [DEBUG] Received request for Profile ID: " + id);
+        Optional<Profile> profile = profileService.getProfileById(id);
 
         if (profile.isPresent()) {
             return ResponseEntity.ok(profile.get());
         } else {
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Profile not found for user ID: " + userId);
+            error.put("error", "DEBUG: Profile not found for internal ID: " + id);
             return ResponseEntity.status(404).body(error);
         }
     }
 
-    // PUT /profiles/{userId}
-    @PutMapping("/{userId}")
-    public ResponseEntity<?> updateProfile(@PathVariable Long userId, @RequestBody Profile updatedProfile) {
-        Profile result = profileService.updateProfile(userId, updatedProfile);
+    // PUT /profiles/{id} -> Mise à jour via l'ID interne
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateProfile(@PathVariable Long id, @RequestBody Profile updatedProfile) {
+        Profile result = profileService.updateProfile(id, updatedProfile);
 
         if (result != null) {
             return ResponseEntity.ok(result);
         } else {
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Cannot update profile. User ID not found: " + userId);
+            error.put("error", "Cannot update profile. Profile ID not found: " + id);
             return ResponseEntity.status(404).body(error);
         }
     }
 
-    // Endpoint de test
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Profile-Service is running!");
-    }
-
-    // Ajoute cette méthode
-    @Autowired
-    private KafkaTest kafkaTest;
-
-    @PostMapping("/test-kafka")
-    public String testKafka() {
-        kafkaTest.sendAllTestEvents();
-        return "Test Kafka events sent! Check console logs.";
-    }
-
-    // --- Gestion des Images (BLOB) ---
-
-    // Upload Image: POST /profiles/{userId}/image
-    @PostMapping("/{userId}/image")
-    public ResponseEntity<?> uploadImage(@PathVariable Long userId, @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+    // POST /profiles/{id}/image -> Upload d'image via ID interne
+    @PostMapping("/{id}/image")
+    public ResponseEntity<?> uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
         try {
-            profileService.uploadProfileImage(userId, file);
+            profileService.uploadProfileImage(id, file);
             return ResponseEntity.ok("Image uploaded successfully");
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             return ResponseEntity.status(500).body("Error uploading image: " + e.getMessage());
         }
     }
 
-    // Get Image: GET /profiles/{userId}/image
-    @GetMapping("/{userId}/image")
-    public ResponseEntity<byte[]> getImage(@PathVariable Long userId) {
-        // Attention: ici on suppose que userId = profileId pour simplifier,
-        // sinon il faut récupérer le profil d'abord.
-        // Dans getProfileByUserId, on a supposé que l'ID du profil était accessible.
-        // On va d'abord retrouver le profil ID via le UserID.
+    // GET /profiles/image/{profileId} -> Récupération de l'image
+    @GetMapping("/image/{profileId}")
+    public ResponseEntity<byte[]> getImage(@PathVariable Long profileId) {
+        Optional<ProfileImage> imageOpt = profileService.getProfileImage(profileId);
 
-        java.util.Optional<com.example.entity.Profile> profile = profileService.getProfileByUserId(userId);
-        if (profile.isPresent()) {
-            java.util.Optional<com.example.entity.ProfileImage> imageOpt = profileService.getProfileImage(profile.get().getId());
-            if (imageOpt.isPresent()) {
-                com.example.entity.ProfileImage image = imageOpt.get();
-                return ResponseEntity.ok()
-                        .contentType(org.springframework.http.MediaType.parseMediaType(image.getContentType()))
-                        .body(image.getImageData());
+        if (imageOpt.isPresent()) {
+            ProfileImage image = imageOpt.get();
+            String contentType = image.getFileType();
+            if (contentType == null || contentType.isEmpty()) {
+                contentType = "image/png"; // Fallback par défaut
             }
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .body(image.getImageData());
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    // Endpoint de test Kafka
+    @PostMapping("/test-kafka")
+    public ResponseEntity<String> runKafkaTest() {
+        kafkaTest.sendAllTestEvents();
+        return ResponseEntity.ok("Test events triggered! Check console logs.");
     }
 }
