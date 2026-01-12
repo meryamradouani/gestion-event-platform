@@ -22,8 +22,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Indispensable pour tester avec Postman ou Android
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Autorise l'accès à l'inscription
-                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll() // Health check public
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated()
+                );
         return http.build();
     }
 }
