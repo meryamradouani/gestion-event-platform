@@ -67,8 +67,11 @@ jobs:
   ## 🐳 STAGE 3: DOCKER (main uniquement)
   docker:
     needs: [test, sonar]
-    if: github.ref == 'refs/heads/main'  # ✅ UNIQUEMENT main
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api-gateway, auth-service, event-service, notification-service, profil-service, registration-service]
     steps:
       - uses: actions/checkout@v4
       
@@ -85,5 +88,5 @@ jobs:
       
       - name: 🐳 Build & Push
         run: |
-          docker build -t meryamm/gestion_event_platform:latest .
-          docker push meryamm/gestion_event_platform:latest
+          docker build -t meryamm/gestion-event-${{ matrix.service }}:latest -f ${{ matrix.service }}/Dockerfile ./${{ matrix.service }}/
+          docker push meryamm/gestion-event-${{ matrix.service }}:latest
