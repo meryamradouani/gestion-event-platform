@@ -1,43 +1,14 @@
-version: '3.8'
-
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql-container
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: auth_db  # Ajouter pour créer la DB par défaut
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - event-platform-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-      interval: 10s
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      - event-platform-network
-    healthcheck:
-      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     depends_on:
-      zookeeper:
-        condition: service_healthy
+      - zookeeper
     ports:
       - "9092:9092"
     environment:
@@ -47,124 +18,3 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       # Cette ligne force Kafka à ne pas chercher les réglages KRaft
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
-    networks:
-      - event-platform-network
-    healthcheck:
-      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:29092", "--list"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-  auth-service:
-    build: ./auth-service
-    container_name: auth-service
-    ports:
-      - "8081:8081"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/auth_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - event-platform-network
-
-  event-service:
-    build: ./event-service
-    container_name: event-service
-    ports:
-      - "8083:8083"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/event_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    depends_on:
-      mysql:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    networks:
-      - event-platform-network
-
-  notification-service:
-    build: ./notification-service
-    container_name: notification-service
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/notification_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    depends_on:
-      mysql:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    networks:
-      - event-platform-network
-
-  profil-service:
-    build: ./profil-service
-    container_name: profil-service
-    ports:
-      - "8085:8085"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/profile_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    depends_on:
-      mysql:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    networks:
-      - event-platform-network
-
-  registration-service:
-    build: ./registration-service
-    container_name: registration-service
-    ports:
-      - "8082:8082"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/registration_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-    depends_on:
-      mysql:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    networks:
-      - event-platform-network
-
-  api-gateway:
-    build: ./api-gateway
-    container_name: api-gateway
-    ports:
-      - "8888:8888"
-    depends_on:
-      auth-service:
-        condition: service_started
-      registration-service:
-        condition: service_started
-      event-service:
-        condition: service_started
-      notification-service:
-        condition: service_started
-      profil-service:
-        condition: service_started
-    networks:
-      - event-platform-network
-
-volumes:
-  mysql_data:
-
-networks:
-  event-platform-network:
-    driver: bridge

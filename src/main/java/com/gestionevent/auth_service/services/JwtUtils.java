@@ -11,18 +11,11 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    @org.springframework.beans.factory.annotation.Value("${app.jwt-secret}")
-    private String jwtSecret;
+    // Une clé secrète forte (en production, on la met dans application.properties)
+    private final String jwtSecret = "MaCleSecrete_Events_Project_2026";
+    private final int jwtExpirationMs = 86400000; // 24 heures en millisecondes
 
-    @org.springframework.beans.factory.annotation.Value("${app.jwt-expiration-ms}")
-    private int jwtExpirationMs;
-
-    private Key key;
-
-    @jakarta.annotation.PostConstruct
-    public void init() {
-        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-    }
+    private final Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 
     public String generateToken(String email, String role, Long userId) {
         return Jwts.builder()
