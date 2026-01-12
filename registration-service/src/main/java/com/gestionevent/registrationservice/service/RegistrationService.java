@@ -80,30 +80,5 @@ public class RegistrationService {
         return repository.existsByUserIdAndEventId(userId, eventId);
     }
 
-    @Transactional
-    public void updateAttendanceStatus(Long registrationId, String status) {
-        EventRegistration registration = repository.findById(registrationId)
-                .orElseThrow(() -> new RuntimeException("Inscription non trouvée"));
 
-        // Valider le statut
-        if (!List.of("pending", "present", "absent").contains(status)) {
-            throw new RuntimeException("Statut invalide. Utiliser: pending, present, absent");
-        }
-
-        registration.setAttendanceStatus(status);
-        repository.save(registration);
-    }
-
-    // Générer un QR code
-    @Transactional
-    public void generateQrCode(Long registrationId) {
-        EventRegistration registration = repository.findById(registrationId)
-                .orElseThrow(() -> new RuntimeException("Inscription non trouvée"));
-
-        // Générer un QR code unique
-        String qrCode = "EVENT-REG-" + registrationId + "-" +
-                UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        registration.setQrCode(qrCode);
-        repository.save(registration);
-    }
 }

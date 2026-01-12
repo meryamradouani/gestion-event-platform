@@ -73,20 +73,5 @@ public class RegistrationController {
         return ResponseEntity.ok(isRegistered);
     }
 
-    // 7. Mettre à jour le statut de présence
-    @PutMapping("/{registrationId}/attendance")
-    public ResponseEntity<Void> updateAttendance(
-            @PathVariable Long registrationId,
-            @RequestParam String status) {
 
-        registrationService.updateAttendanceStatus(registrationId, status);
-        return ResponseEntity.ok().build();
-    }
-
-    // 8. Générer un QR code pour l'inscription
-    @PostMapping("/{registrationId}/generate-qr")
-    public ResponseEntity<String> generateQrCode(@PathVariable Long registrationId) {
-        registrationService.generateQrCode(registrationId);
-        return ResponseEntity.ok("QR code généré pour l'inscription " + registrationId);
-    }
 }
