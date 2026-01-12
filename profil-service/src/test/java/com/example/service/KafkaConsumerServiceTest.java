@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 public class KafkaConsumerServiceTest {
@@ -45,7 +46,11 @@ public class KafkaConsumerServiceTest {
                 "test@example.com",
                 "John Doe",
                 "student",
-                LocalDateTime.now());
+                LocalDateTime.now(),
+                "ENSA",
+                "Informatique",
+                null,
+                null);
 
         // RegistrationConfirmedEvent setup
         registrationConfirmedEvent = new RegistrationConfirmedEvent(
@@ -77,7 +82,12 @@ public class KafkaConsumerServiceTest {
         verify(profileService, times(1)).createOrUpdateProfileAfterLogin(
                 eq(100L),
                 eq("test@example.com"),
-                eq("John Doe"));
+                eq("John Doe"),
+                eq("student"),
+                eq("ENSA"),
+                eq("Informatique"),
+                isNull(),
+                isNull());
     }
 
     @Test

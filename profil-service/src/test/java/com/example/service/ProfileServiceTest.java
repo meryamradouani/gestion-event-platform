@@ -32,7 +32,7 @@ public class ProfileServiceTest {
         when(profileRepository.findByUserId(1L)).thenReturn(Optional.empty());
 
         // Act
-        profileService.createOrUpdateProfileAfterLogin(1L, "test@example.com", "Test User");
+        profileService.createOrUpdateProfileAfterLogin(1L, "test@example.com", "Test User", "student", "ENSA", "IFA", null, null);
 
         // Assert
         verify(profileRepository).save(any(Profile.class));
@@ -45,7 +45,7 @@ public class ProfileServiceTest {
         when(profileRepository.findByUserId(1L)).thenReturn(Optional.of(existingProfile));
 
         // Act
-        profileService.createOrUpdateProfileAfterLogin(1L, "test@example.com", "New Name");
+        profileService.createOrUpdateProfileAfterLogin(1L, "test@example.com", "New Name", "student", "ENSA", "IFA", null, null);
 
         // Assert
         verify(profileRepository).save(existingProfile);
@@ -57,14 +57,15 @@ public class ProfileServiceTest {
         // Arrange
         Profile profile = new Profile(1L, "User");
         when(profileRepository.findByUserId(1L)).thenReturn(Optional.of(profile));
-
+        
         // Act
         profileService.addEventToHistory(1L, 100L, "inscrit");
 
         // Assert
         verify(profileRepository).save(profile);
         String history = profile.getEventsHistory();
-        assert (history.contains("\"inscrits\":[100]"));
+        assert (history.contains("\"eventId\":100"));
+        assert (history.contains("\"type\":\"inscrit\""));
     }
 
     @Test
@@ -79,6 +80,7 @@ public class ProfileServiceTest {
         // Assert
         verify(profileRepository).save(profile);
         String history = profile.getEventsHistory();
-        assert (history.contains("\"créés\":[101]"));
+        assert (history.contains("\"eventId\":101"));
+        assert (history.contains("\"type\":\"créé\""));
     }
 }
