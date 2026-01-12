@@ -1,9 +1,12 @@
+version: '3.8'
+
 services:
   mysql:
     image: mysql:8.0
     container_name: mysql-container
     environment:
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: auth_db  # Ajouter pour créer la DB par défaut
     ports:
       - "3306:3306"
     volumes:
@@ -12,9 +15,10 @@ services:
     networks:
       - event-platform-network
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
+      interval: 10s
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -24,12 +28,18 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - event-platform-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     ports:
       - "9092:9092"
     environment:
@@ -41,6 +51,11 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - event-platform-network
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:29092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   auth-service:
     build: ./auth-service
@@ -48,7 +63,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/db_auth_service
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/auth_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -72,7 +87,7 @@ services:
       mysql:
         condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
     networks:
       - event-platform-network
 
@@ -90,7 +105,7 @@ services:
       mysql:
         condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
     networks:
       - event-platform-network
 
@@ -108,7 +123,7 @@ services:
       mysql:
         condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
     networks:
       - event-platform-network
 
@@ -126,7 +141,7 @@ services:
       mysql:
         condition: service_healthy
       kafka:
-        condition: service_started
+        condition: service_healthy
     networks:
       - event-platform-network
 
@@ -136,11 +151,16 @@ services:
     ports:
       - "8888:8888"
     depends_on:
-      - auth-service
-      - registration-service
-      - event-service
-      - notification-service
-      - profil-service
+      auth-service:
+        condition: service_started
+      registration-service:
+        condition: service_started
+      event-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+      profil-service:
+        condition: service_started
     networks:
       - event-platform-network
 
