@@ -1,11 +1,16 @@
 package com.gestionevent.auth_service.controllers;
 
-import com.gestionevent.auth_service.entities.User;
+import com.gestionevent.auth_service.dto.JwtResponse;
+import com.gestionevent.auth_service.dto.LoginRequest;
 import com.gestionevent.auth_service.dto.RegisterRequest;
-import com.gestionevent.auth_service.dto.LoginRequest; // 1. Ajout de l'import LoginRequest
+import com.gestionevent.auth_service.dto.UserAuthenticatedMessage;
+import com.gestionevent.auth_service.dto.UserTokenMessage;
+import com.gestionevent.auth_service.entities.User;
 import com.gestionevent.auth_service.repositories.UserRepository;
+import com.gestionevent.auth_service.services.JwtUtils;
+import com.gestionevent.auth_service.services.KafkaProducerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus; // 2. Ajout de l'import HttpStatus
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -20,30 +25,59 @@ public class AuthController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    private static final String ROLE_STUDENT = "STUDENT";
-    private static final String ROLE_ORGANIZER = "ORGANIZER";
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     // --- Inscription Étudiant ---
     @PostMapping("/register/student")
-    public ResponseEntity<String> registerStudent(@RequestBody RegisterRequest request) {
-        return saveUser(request, ROLE_STUDENT); // On laisse saveUser gérer la réponse
+    public ResponseEntity<?> registerStudent(@RequestBody RegisterRequest request) {
+        return saveUser(request, "STUDENT");
     }
 
     // --- Inscription Organisateur ---
     @PostMapping("/register/organizer")
-    public ResponseEntity<String> registerOrganizer(@RequestBody RegisterRequest request) {
-        return saveUser(request, ROLE_ORGANIZER);
+    public ResponseEntity<?> registerOrganizer(@RequestBody RegisterRequest request) {
+        return saveUser(request, "ORGANIZER");
     }
 
     // --- Connexion ---
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         return userRepository.findByEmail(request.getEmail())
                 .map(user -> {
-                    // Vérification du mot de passe haché
                     if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-                        return ResponseEntity.ok(
-                                "Connexion réussie ! Bienvenue " + user.getFirstName() + " (" + user.getRole() + ")");
+
+                        // Kafka - Notification / Tokens
+                        UserTokenMessage tokenMessage = new UserTokenMessage(
+                                user.getId(),
+                                request.getFcmToken() != null ? request.getFcmToken() : "token_fcm_test",
+                                request.getDeviceType() != null ? request.getDeviceType() : "ANDROID",
+                                request.getDeviceInfo() != null ? request.getDeviceInfo() : "Mobile Device"
+                        );
+                        kafkaProducerService.sendTokenUpdate(tokenMessage);
+
+                        // Kafka - Service Profil
+                        UserAuthenticatedMessage profileMessage = new UserAuthenticatedMessage(
+                                user.getId(),
+                                user.getEmail(),
+                                user.getFullName(),
+                                user.getRole()
+                        );
+                        kafkaProducerService.sendUserAuthenticated(profileMessage);
+
+                        // Token JWT
+                        String jwt = jwtUtils.generateToken(user.getEmail(), user.getRole(), user.getId());
+
+                        return ResponseEntity.ok(new JwtResponse(
+                                jwt,
+                                user.getId(),
+                                user.getEmail(),
+                                user.getRole()
+                        ));
+
                     } else {
                         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mot de passe incorrect");
                     }
@@ -51,32 +85,39 @@ public class AuthController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utilisateur non trouvé"));
     }
 
-    // Méthode utilitaire pour traiter l'inscription
-    private ResponseEntity<String> saveUser(RegisterRequest request, String role) {
-        // Vérification unique de l'email
+    // Méthode utilitaire pour traiter l'inscription (Mise à jour)
+    private ResponseEntity<?> saveUser(RegisterRequest request, String role) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Erreur : Cet email est déjà utilisé.");
         }
 
         User user = new User();
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
+        user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword())); // Hachage
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(role);
 
-        // Attribution des champs spécifiques
+        // On utilise la même colonne pour l'école (Étudiant) ou l'organisation (Organisateur)
+        user.setNomEtablissement(request.getNomEtablissement());
+
         if ("STUDENT".equals(role)) {
-            user.setCne(request.getCne());
+            // CNE et Niveau supprimés comme convenu
             user.setFiliere(request.getFiliere());
-            user.setNiveau(request.getNiveau());
         } else if ("ORGANIZER".equals(role)) {
-            user.setNomEtablissement(request.getNomEtablissement());
             user.setTypeOrganisateur(request.getTypeOrganisateur());
         }
 
         userRepository.save(user);
-        String message = (ROLE_STUDENT.equals(role) ? "Étudiant" : "Organisateur") + " inscrit avec succès !";
+
+        // Notification Kafka
+        String kafkaMsg = "NOUVEL_UTILISATEUR|" + role + "|" + user.getEmail() + "|" + user.getFullName();
+        try {
+            kafkaProducerService.sendMessage(kafkaMsg);
+        } catch (Exception e) {
+            System.err.println("Erreur notification Kafka inscription : " + e.getMessage());
+        }
+
+        String message = ("STUDENT".equals(role) ? "Étudiant" : "Organisateur") + " inscrit avec succès !";
         return ResponseEntity.ok(message);
     }
 }

@@ -10,34 +10,30 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String password;
 
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
-
+    @Column(nullable = false)
     private String role; // "STUDENT" ou "ORGANIZER"
 
-    // --- Champs spécifiques : Étudiant ---
-    private String cne;
-    private String filiere;
-    private String niveau;
+    // --- Champs spécifiques (Mise à jour) ---
 
-    // --- Champs spécifiques : Organisateur ---
+    @Column(name = "filiere")
+    private String filiere; // Pour l'étudiant
+
     @Column(name = "nom_etablissement")
-    private String nomEtablissement;
+    private String nomEtablissement; // École (Étudiant) OU Organisation (Organisateur)
 
     @Column(name = "type_organisateur")
-    private String typeOrganisateur;
+    private String typeOrganisateur; // Pour l'organisateur (Club, Asso, etc.)
 
     // --- Constructeurs ---
-    // Constructeur par défaut requis par JPA
     public User() {
     }
 
@@ -49,6 +45,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getEmail() {
@@ -67,37 +71,12 @@ public class User {
         this.password = password;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
     public String getRole() {
         return role;
     }
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    // Étudiant
-    public String getCne() {
-        return cne;
-    }
-
-    public void setCne(String cne) {
-        this.cne = cne;
     }
 
     public String getFiliere() {
@@ -108,15 +87,6 @@ public class User {
         this.filiere = filiere;
     }
 
-    public String getNiveau() {
-        return niveau;
-    }
-
-    public void setNiveau(String niveau) {
-        this.niveau = niveau;
-    }
-
-    // Organisateur
     public String getNomEtablissement() {
         return nomEtablissement;
     }
