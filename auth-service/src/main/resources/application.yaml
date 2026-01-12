@@ -24,3 +24,7 @@ management:
       probes:
         enabled: true
       show-details: never
+      
+app:
+  jwt-secret: MaCleSecrete_Events_Project_2026_CHANGE_ME_IN_PROD_SUPER_LONG_KEY
+  jwt-expiration-ms: 86400000
