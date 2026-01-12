@@ -19,11 +19,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Indispensable pour tester avec Postman ou Android
+                // CSRF est inutile pour une API REST Stateless utilisant JWT (pas de
+                // sessions/cookies)
+                // C'est donc sécurisé de le désactiver car le navigateur ne gère pas le token
+                // automatiquement
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Autorise l'accès à l'inscription
-                        .anyRequest().authenticated()
-                );
+                        .anyRequest().authenticated());
         return http.build();
     }
 }

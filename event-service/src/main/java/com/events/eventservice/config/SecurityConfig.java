@@ -14,9 +14,16 @@ public class SecurityConfig {
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
-                                .csrf(csrf -> csrf.disable()) // ← Désactiver CSRF pour les tests
+                                // On désactive le CSRF car l'API est STATELESS et utilise des tokens JWT (pas
+                                // de cookies de session)
+                                // Cela évite les attaques CSRF car le token ne peut pas être volé via le
+                                // navigateur automatiquement
+                                .csrf(csrf -> csrf.disable())
+
                                 .authorizeHttpRequests(authz -> authz
-                                                .requestMatchers("/**").permitAll() // ← Autoriser TOUTES les requêtes
+                                                // ATTENTION:permitAll() sur tout est utile pour le dev, mais doit être
+                                                // restreint en PROD
+                                                .requestMatchers("/actuator/**").permitAll()
                                                 .anyRequest().permitAll())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
