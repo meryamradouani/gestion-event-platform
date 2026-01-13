@@ -11,10 +11,9 @@ import org.springframework.stereotype.Service;
 public class KafkaProducerService {
 
     @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
-    // Initialisation manuelle pour éviter l'erreur de Bean "ObjectMapper not found"
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    // Suppression de l'ObjectMapper manuel pour laisser Spring gérer la sérialisation
 
     // --- Topics Kafka ---
     private static final String TOPIC_REGISTRATION = "user-registration";
@@ -33,28 +32,16 @@ public class KafkaProducerService {
      * Envoie le token FCM au service de notification (Amie 1).
      */
     public void sendTokenUpdate(UserTokenMessage message) {
-        try {
-            String jsonMessage = objectMapper.writeValueAsString(message);
-            System.out.println(">>> Kafka (Token Update) vers " + TOPIC_TOKENS + " : " + jsonMessage);
-            this.kafkaTemplate.send(TOPIC_TOKENS, jsonMessage);
-        } catch (Exception e) {
-            System.err.println("ERREUR JSON TOKEN : " + e.getMessage());
-        }
+        System.out.println(">>> Kafka (Token Update) vers " + TOPIC_TOKENS + " : " + message);
+        this.kafkaTemplate.send(TOPIC_TOKENS, message);
     }
 
     /**
      * Envoie les infos d'identité au Service de Profil (Amie 2 / Salma).
      */
     public void sendUserAuthenticated(UserAuthenticatedMessage message) {
-        try {
-            // Transformation de l'objet en JSON pour respecter le contrat
-            String jsonMessage = objectMapper.writeValueAsString(message);
-            System.out.println(">>> Kafka (Profile Sync) vers " + TOPIC_AUTH_PROFIL + " : " + jsonMessage);
-
-            // Envoi sur le topic spécifique attendu par le Service Profil
-            this.kafkaTemplate.send(TOPIC_AUTH_PROFIL, jsonMessage);
-        } catch (Exception e) {
-            System.err.println("ERREUR JSON PROFIL : " + e.getMessage());
-        }
+        System.out.println(">>> Kafka (Profile Sync) vers " + TOPIC_AUTH_PROFIL + " : " + message);
+        // Envoi de l'objet directement, Spring Kafka utilisera le JsonSerializer configuré
+        this.kafkaTemplate.send(TOPIC_AUTH_PROFIL, message);
     }
 }

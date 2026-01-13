@@ -59,6 +59,13 @@ public class EventService {
         return convertToResponse(event);
     }
 
+    public List<EventResponse> getEventsByIds(List<Long> ids) {
+        log.info("Récupération des événements avec IDs: {}", ids);
+        return eventRepository.findAllByIdIn(ids).stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public EventResponse createEvent(CreateEventRequest request, Long creatorId) {
         return createEventWithImage(request, null, creatorId);
@@ -66,19 +73,26 @@ public class EventService {
 
     @Transactional
     public EventResponse createEventWithImage(CreateEventRequest request, MultipartFile imageFile, Long creatorId) {
+        log.info(">>> [EventService] Creating event for user {}", creatorId);
+        
         // Vérifier le rôle
         checkOrganizerRole(creatorId);
 
-        log.info("Création d'un nouvel événement avec image par l'utilisateur {}", creatorId);
-
-        // Validation de la date
-        validateEventDate(request.getEventDate());
+        // Parsing de la date
+        LocalDateTime eventDate;
+        try {
+            eventDate = LocalDateTime.parse(request.getEventDate());
+            validateEventDate(eventDate);
+        } catch (Exception e) {
+            log.error(">>> [EventService] Error parsing date: {}", request.getEventDate());
+            throw new IllegalArgumentException("Date invalide (ISO attendu: 2026-01-25T14:30:00)");
+        }
 
         // Création de l'entité Event
         Event event = Event.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .eventDate(request.getEventDate())
+                .eventDate(eventDate)
                 .location(request.getLocation())
                 .maxParticipants(request.getMaxParticipants())
                 .createdBy(creatorId)
@@ -147,13 +161,19 @@ public class EventService {
             throw new SecurityException("Seul le créateur peut modifier l'événement");
         }
 
-        // Validation de la date
-        validateEventDate(request.getEventDate());
+        // Parsing et validation de la date
+        LocalDateTime eventDate;
+        try {
+            eventDate = LocalDateTime.parse(request.getEventDate());
+            validateEventDate(eventDate);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Format de date invalide (attendu: 2026-01-25T14:30:00)");
+        }
 
         // Mettre à jour les champs
         event.setTitle(request.getTitle());
         event.setDescription(request.getDescription());
-        event.setEventDate(request.getEventDate());
+        event.setEventDate(eventDate);
         event.setLocation(request.getLocation());
         event.setMaxParticipants(request.getMaxParticipants());
         event.setUpdatedAt(LocalDateTime.now());
@@ -261,19 +281,20 @@ public class EventService {
     // Vérification du rôle organisateur
     private void checkOrganizerRole(Long userId) {
         if (userId == null) {
+            log.error(">>> [EventService] checkOrganizerRole failed: userId is null");
             throw new SecurityException("Utilisateur non authentifié.");
         }
+        log.info(">>> [EventService] Checking role for userId: {}", userId);
         userRoleRepository.findById(userId).ifPresentOrElse(
                 userRole -> {
+                    log.info(">>> [EventService] Found role for user {}: {}", userId, userRole.getRole());
                     if (!"organizer".equalsIgnoreCase(userRole.getRole())) {
+                        log.warn(">>> [EventService] User {} has role {}, expected 'organizer'", userId, userRole.getRole());
                         throw new SecurityException("Seuls les organisateurs peuvent effectuer cette action.");
                     }
                 },
                 () -> {
-                    // Optionnel : Si l'utilisateur n'est pas trouvé (pas encore login ou erreur
-                    // sync),
-                    // on peut soit bloquer, soit laisser passer (politique par défaut).
-                    // Ici, on bloque par sécurité.
+                    log.error(">>> [EventService] No role found in local database for user {}", userId);
                     throw new SecurityException("Utilisateur non identifié ou rôle inconnu.");
                 });
     }

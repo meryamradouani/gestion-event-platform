@@ -55,7 +55,7 @@ public class EventServiceTest {
         createEventRequest = new CreateEventRequest();
         createEventRequest.setTitle("New Event");
         createEventRequest.setDescription("Description");
-        createEventRequest.setEventDate(LocalDateTime.now().plusDays(10));
+        createEventRequest.setEventDate(LocalDateTime.now().plusDays(10).toString());
         createEventRequest.setLocation("Paris");
         createEventRequest.setMaxParticipants(100);
 

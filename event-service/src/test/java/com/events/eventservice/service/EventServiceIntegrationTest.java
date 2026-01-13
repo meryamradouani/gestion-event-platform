@@ -51,7 +51,7 @@ public class EventServiceIntegrationTest {
         CreateEventRequest request = new CreateEventRequest();
         request.setTitle("Integration Test Event");
         request.setDescription("Une description réelle");
-        request.setEventDate(LocalDateTime.now().plusDays(5));
+        request.setEventDate(LocalDateTime.now().plusDays(5).toString());
         request.setLocation("Campus");
         request.setMaxParticipants(50);
 
@@ -73,7 +73,7 @@ public class EventServiceIntegrationTest {
         CreateEventRequest request = new CreateEventRequest();
         request.setTitle("Hacked Event");
         request.setDescription("Should not exist");
-        request.setEventDate(LocalDateTime.now().plusDays(5));
+        request.setEventDate(LocalDateTime.now().plusDays(5).toString());
         request.setLocation("Nowhere");
 
         // 2. Exécuter & Vérifier l'exception (Sécurité)

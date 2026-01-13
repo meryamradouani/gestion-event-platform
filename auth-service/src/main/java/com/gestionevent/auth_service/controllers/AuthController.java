@@ -59,12 +59,21 @@ public class AuthController {
                         );
                         kafkaProducerService.sendTokenUpdate(tokenMessage);
 
-                        // Kafka - Service Profil
+                        // Kafka - Service Profil (Refined Sync)
+                        String institution = "STUDENT".equals(user.getRole()) ? user.getNomEtablissement() : null;
+                        String major = "STUDENT".equals(user.getRole()) ? user.getFiliere() : null;
+                        String orgName = "ORGANIZER".equals(user.getRole()) ? user.getNomEtablissement() : null;
+                        String orgType = "ORGANIZER".equals(user.getRole()) ? user.getTypeOrganisateur() : null;
+
                         UserAuthenticatedMessage profileMessage = new UserAuthenticatedMessage(
                                 user.getId(),
                                 user.getEmail(),
                                 user.getFullName(),
-                                user.getRole()
+                                user.getRole(),
+                                institution,
+                                major,
+                                orgName,
+                                orgType
                         );
                         kafkaProducerService.sendUserAuthenticated(profileMessage);
 
@@ -109,7 +118,29 @@ public class AuthController {
 
         userRepository.save(user);
 
-        // Notification Kafka
+        // Kafka - Service Profil (INITIAL SYNC ON SIGNUP)
+        String institution = "STUDENT".equals(user.getRole()) ? user.getNomEtablissement() : null;
+        String major = "STUDENT".equals(user.getRole()) ? user.getFiliere() : null;
+        String orgName = "ORGANIZER".equals(user.getRole()) ? user.getNomEtablissement() : null;
+        String orgType = "ORGANIZER".equals(user.getRole()) ? user.getTypeOrganisateur() : null;
+
+        UserAuthenticatedMessage profileMessage = new UserAuthenticatedMessage(
+                user.getId(),
+                user.getEmail(),
+                user.getFullName(),
+                user.getRole(),
+                institution,
+                major,
+                orgName,
+                orgType
+        );
+        try {
+            kafkaProducerService.sendUserAuthenticated(profileMessage);
+        } catch (Exception e) {
+            System.err.println("Erreur sync profil Kafka : " + e.getMessage());
+        }
+
+        // Notification Kafka (Legacy/Other)
         String kafkaMsg = "NOUVEL_UTILISATEUR|" + role + "|" + user.getEmail() + "|" + user.getFullName();
         try {
             kafkaProducerService.sendMessage(kafkaMsg);

@@ -14,8 +14,8 @@ public class CreateEventRequest {
     @Size(max = 2000, message = "La description ne doit pas dépasser 2000 caractères")
     private String description;
 
-    @Future(message = "La date de l'événement doit être dans le futur")
-    private LocalDateTime eventDate;
+    @NotBlank(message = "La date de l'événement est obligatoire")
+    private String eventDate;
 
     @NotBlank(message = "Le lieu est obligatoire")
     private String location;

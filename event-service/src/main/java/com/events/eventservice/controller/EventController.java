@@ -61,6 +61,8 @@ public class EventController {
             userId = 1L;
         }
 
+        System.out.println(">>> [EventController] Create request for: " + (request != null ? request.getTitle() : "null"));
+
         EventResponse createdEvent = eventService.createEventWithImage(request, image, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
     }
@@ -132,5 +134,11 @@ public class EventController {
 
         EventResponse updatedEvent = eventService.updateEventImage(id, imageFile, userId);
         return ResponseEntity.ok(updatedEvent);
+    }
+
+    @Operation(summary = "Récupérer plusieurs événements par IDs")
+    @GetMapping("/batch")
+    public ResponseEntity<List<EventResponse>> getEventsByIds(@RequestParam List<Long> ids) {
+        return ResponseEntity.ok(eventService.getEventsByIds(ids));
     }
 }

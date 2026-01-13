@@ -3,6 +3,7 @@ package com.gestionevent.registrationservice.service;
 import com.gestionevent.registrationservice.model.EventRegistration;
 import com.gestionevent.registrationservice.repository.EventRegistrationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RegistrationService {
 
     private final EventRegistrationRepository repository;
@@ -20,44 +22,43 @@ public class RegistrationService {
     // S'inscrire à un événement
     @Transactional
     public EventRegistration registerUserToEvent(Long userId, Long eventId, Integer maxParticipants) {
-        // 1. Vérifier si déjà inscrit
+        log.info("Starting registration for userId: {} to eventId: {}", userId, eventId);
+        
         if (repository.existsByUserIdAndEventId(userId, eventId)) {
-            throw new RuntimeException("Utilisateur déjà inscrit à cet événement");
+            log.warn("Registration failed: User {} already registered to event {}", userId, eventId);
+            throw new RuntimeException("Vous êtes déjà inscrit à cet événement.");
         }
 
-        // 2. Vérifier limite de participants
-        Long currentCount = repository.countByEventId(eventId);
-        if (maxParticipants != null && currentCount >= maxParticipants) {
-            throw new RuntimeException("Événement complet");
+        if (maxParticipants != null) {
+            long currentCount = repository.countByEventId(eventId);
+            if (currentCount >= maxParticipants) {
+                log.warn("Registration failed: Event {} is full ({} participants)", eventId, currentCount);
+                throw new RuntimeException("Cet événement est complet.");
+            }
         }
 
-        // 3. Créer et sauvegarder l'inscription
         EventRegistration registration = new EventRegistration(userId, eventId);
         EventRegistration saved = repository.save(registration);
+        log.info("Registration saved in DB with ID: {}", saved.getId());
 
-        // 4. PUBLIER LES DEUX ÉVÉNEMENTS KAFKA
-
-        // Pour générer le titre de l'événement (vous pouvez améliorer ça)
-        String eventTitle = "Événement #" + eventId;
-
-        // 🔵 Pour P4 (Notification-Service) - Topic: registrations.created
-        eventPublisher.publishRegistrationCreated(userId, eventId, eventTitle);
-
-        LocalDateTime eventDate = LocalDateTime.now().plusDays(7); // Date par défaut
-
-
-        eventPublisher.publishRegistrationConfirmed(userId, eventId, eventTitle, eventDate);
+        // Envoi asynchrone (via try-catch interne de publisher)
+        try {
+            String eventTitle = "Événement #" + eventId;
+            log.info("Attempting to publish Kafka events for userId: {}", userId);
+            eventPublisher.publishRegistrationCreated(userId, eventId, eventTitle);
+            log.info("Kafka publish triggered successfully");
+        } catch (Exception e) {
+            log.error("Failed to trigger Kafka publish, but registration is saved", e);
+        }
 
         return saved;
     }
 
-    // Se désinscrire d'un événement
     @Transactional
     public void unregisterUserFromEvent(Long userId, Long eventId) {
-        EventRegistration registration = repository.findByUserIdAndEventId(userId, eventId)
-                .orElseThrow(() -> new RuntimeException("Inscription non trouvée"));
-
-        repository.delete(registration);
+        log.info("Attempting robust deletion for userId: {} and eventId: {}", userId, eventId);
+        repository.deleteByUserIdAndEventId(userId, eventId);
+        log.info("Atomic delete operation completed for userId: {} and eventId: {}", userId, eventId);
     }
 
     // Obtenir toutes les inscriptions d'un événement (pour organisateur)

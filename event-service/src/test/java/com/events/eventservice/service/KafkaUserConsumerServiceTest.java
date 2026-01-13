@@ -9,7 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -31,7 +30,7 @@ public class KafkaUserConsumerServiceTest {
                 .email("test@example.com")
                 .fullName("Test User")
                 .role("organizer")
-                .loginTime(LocalDateTime.now())
+                .loginTime("2026-01-12T20:00:00")
                 .build();
 
         // Act

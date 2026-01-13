@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -16,5 +15,5 @@ public class UserAuthenticatedEvent {
     private String email;
     private String fullName;
     private String role;
-    private LocalDateTime loginTime;
+    private String loginTime;
 }

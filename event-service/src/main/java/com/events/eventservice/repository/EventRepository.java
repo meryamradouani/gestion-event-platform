@@ -12,4 +12,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByEventDateAfter(LocalDateTime date);
 
     List<Event> findByCreatedBy(Long createdBy);
+
+    List<Event> findAllByIdIn(List<Long> ids);
 }

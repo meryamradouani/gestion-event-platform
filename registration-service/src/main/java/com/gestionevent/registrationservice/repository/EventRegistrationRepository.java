@@ -22,4 +22,7 @@ public interface EventRegistrationRepository
     List<EventRegistration> findByEventId(Long eventId);
     // Lister inscriptions d'un utilisateur
     List<EventRegistration> findByUserId(Long userId);
+
+    // Supprimer robuste (gère les doublons potentiels)
+    void deleteByUserIdAndEventId(Long userId, Long eventId);
 }
